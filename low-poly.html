@@ -265,7 +265,7 @@ async function generate() {
   const nPts     = parseInt(document.getElementById('sl-points').value);
   const edgeBias = parseInt(document.getElementById('sl-edge').value) / 100;
 
-  // Sample image into offscreen canvas
+  // Offscreen canvas
   const W = Math.min(srcImage.width, 800);
   const H = Math.round(srcImage.height * (W / srcImage.width));
   const off = document.createElement('canvas');
@@ -278,11 +278,33 @@ async function generate() {
   const edges = sobelEdges(imgData);
 
   setProgress(35); setStatus('Placing points...'); await tick();
-  const pts = placePoints(edges, W, H, nPts, edgeBias);
+
+  // Build points as array-of-arrays with jitter to avoid collinear issues
+  const jitter = () => (Math.random() - 0.5) * 0.5;
+  const pts = [
+    [1 + jitter(),     1 + jitter()],
+    [W-2 + jitter(),   1 + jitter()],
+    [1 + jitter(),     H-2 + jitter()],
+    [W-2 + jitter(),   H-2 + jitter()],
+    [W/2 + jitter(),   1 + jitter()],
+    [1 + jitter(),     H/2 + jitter()],
+    [W-2 + jitter(),   H/2 + jitter()],
+    [W/2 + jitter(),   H-2 + jitter()]
+  ];
+
+  let tries = 0;
+  while (pts.length < nPts + 8 && tries < nPts * 40) {
+    tries++;
+    const x = 2 + Math.random() * (W - 4);
+    const y = 2 + Math.random() * (H - 4);
+    const e = edges[Math.floor(y) * W + Math.floor(x)] || 0;
+    if (Math.random() < (0.1 + edgeBias * e * 3.0)) {
+      pts.push([x + jitter(), y + jitter()]);
+    }
+  }
 
   setProgress(50); setStatus('Triangulating ' + pts.length + ' points...'); await tick();
 
-  // Delaunator expects a flat [x0,y0,x1,y1,...] array
   const d = Delaunator.from(pts);
   const triCount = d.triangles.length / 3;
 
@@ -294,16 +316,11 @@ async function generate() {
   ctx.fillRect(0, 0, W, H);
 
   for (let i = 0; i < d.triangles.length; i += 3) {
-    const ai = d.triangles[i];
-    const bi = d.triangles[i+1];
-    const ci = d.triangles[i+2];
-
+    const ai = d.triangles[i], bi = d.triangles[i+1], ci = d.triangles[i+2];
     const ax = pts[ai][0], ay = pts[ai][1];
     const bx = pts[bi][0], by = pts[bi][1];
     const cx = pts[ci][0], cy = pts[ci][1];
-
-    const mx = (ax+bx+cx)/3;
-    const my = (ay+by+cy)/3;
+    const mx = (ax+bx+cx)/3, my = (ay+by+cy)/3;
 
     ctx.beginPath();
     ctx.moveTo(ax, ay);
@@ -329,7 +346,6 @@ async function generate() {
   setTimeout(() => setProgress(0, false), 600);
 }
 
-// ── Download ──────────────────────────────────────────────────────────────────
 btnDL.addEventListener('click', () => {
   const a = document.createElement('a');
   a.download = 'ORG-lowpoly.png';
