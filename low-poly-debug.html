@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ORG — Low Poly Debug</title>
+<style>
+  body { background: #080808; color: #eeeae2; font-family: monospace; padding: 40px; }
+  #log { margin-top: 20px; font-size: 11px; line-height: 2; color: #666; }
+  #log span { display: block; }
+  #log .ok { color: #39ff14; }
+  #log .err { color: #ff3020; }
+  canvas { border: 1px solid #333; margin-top: 20px; display: block; }
+  button { background: #eeeae2; color: #080808; border: none; padding: 10px 24px; font-family: monospace; cursor: pointer; margin-right: 8px; }
+  input { display: none; }
+</style>
+</head>
+<body>
+<button onclick="document.getElementById('fi').click()">Upload Image</button>
+<input type="file" id="fi" accept="image/*">
+<div id="log"></div>
+<canvas id="c"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/delaunator@5.0.0/delaunator.min.js"></script>
+<script>
+const log = t => {
+  const s = document.createElement('span');
+  s.className = t.startsWith('ERR') ? 'err' : 'ok';
+  s.textContent = t;
+  document.getElementById('log').appendChild(s);
+  console.log(t);
+};
+
+document.getElementById('fi').addEventListener('change', e => {
+  const file = e.target.files[0];
+  log('File: ' + file.name + ' (' + file.type + ')');
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      log('Image loaded: ' + img.width + 'x' + img.height);
+      try { run(img); } catch(e) { log('ERR: ' + e.message); }
+    };
+    img.onerror = () => log('ERR: image failed to load');
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function run(img) {
+  const W = 400, H = Math.round(img.height * (400/img.width));
+  log('Canvas size: ' + W + 'x' + H);
+
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0, W, H);
+  log('Drew image to offscreen canvas');
+
+  let imgData;
+  try {
+    imgData = octx.getImageData(0, 0, W, H);
+    log('Got image data: ' + imgData.data.length + ' bytes');
+  } catch(e) {
+    log('ERR getImageData: ' + e.message);
+    return;
+  }
+
+  // Simple random points — no edge detection
+  const pts = [];
+  pts.push([0,0],[W-1,0],[0,H-1],[W-1,H-1]);
+  for (let i = 0; i < 200; i++) {
+    pts.push([Math.random()*W, Math.random()*H]);
+  }
+  log('Points: ' + pts.length);
+
+  // Check Delaunator
+  if (typeof Delaunator === 'undefined') {
+    log('ERR: Delaunator not loaded');
+    return;
+  }
+  log('Delaunator loaded OK');
+
+  const coords = new Float64Array(pts.length * 2);
+  for (let i = 0; i < pts.length; i++) {
+    coords[i*2] = pts[i][0];
+    coords[i*2+1] = pts[i][1];
+  }
+
+  const d = Delaunator.from(coords);
+  const triCount = d.triangles.length / 3;
+  log('Triangles: ' + triCount);
+
+  if (triCount === 0) {
+    log('ERR: 0 triangles — triangulation failed');
+    return;
+  }
+
+  // Render
+  const c = document.getElementById('c');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = 0; i < d.triangles.length; i += 3) {
+    const ai = d.triangles[i], bi = d.triangles[i+1], ci = d.triangles[i+2];
+    const ax = coords[ai*2], ay = coords[ai*2+1];
+    const bx = coords[bi*2], by = coords[bi*2+1];
+    const cx2 = coords[ci*2], cy2 = coords[ci*2+1];
+    const mx = (ax+bx+cx2)/3, my = (ay+by+cy2)/3;
+    const px = Math.max(0,Math.min(W-1,Math.round(mx)));
+    const py = Math.max(0,Math.min(H-1,Math.round(my)));
+    const idx = (py*W+px)*4;
+    const r=imgData.data[idx], g=imgData.data[idx+1], b=imgData.data[idx+2];
+    const v = Math.round(r*0.299+g*0.587+b*0.114);
+    ctx.beginPath();
+    ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.lineTo(cx2,cy2);
+    ctx.closePath();
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(8,8,8,0.5)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+  log('Render complete');
+}
+</script>
+</body>
+</html>
