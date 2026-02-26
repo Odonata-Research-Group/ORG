@@ -36,42 +36,14 @@
   }
 
   .header-left { display: flex; flex-direction: column; gap: 12px; }
+  .logo-img { width: 220px; height: auto; mix-blend-mode: screen; opacity: 0.92; }
+  .page-label { font-size: 10px; letter-spacing: 0.25em; color: var(--white); text-transform: uppercase; }
 
-  .logo-img {
-    width: 220px;
-    height: auto;
-    mix-blend-mode: screen;
-    opacity: 0.92;
-  }
-
-  .page-label {
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: var(--white);
-    text-transform: uppercase;
-  }
-
-  .header-right {
-    text-align: right;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    line-height: 2.6;
-  }
-
-  .header-right a {
-    color: var(--white);
-    text-decoration: none;
-    display: block;
-    transition: opacity 0.2s;
-  }
+  .header-right { text-align: right; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; line-height: 2.6; }
+  .header-right a { color: var(--white); text-decoration: none; display: block; transition: opacity 0.2s; }
   .header-right a:hover { opacity: 0.4; }
 
-  .app {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    flex: 1;
-  }
+  .app { display: grid; grid-template-columns: 1fr 300px; flex: 1; }
 
   .canvas-area {
     border-right: 1px solid var(--dim);
@@ -99,16 +71,8 @@
 
   .drop-zone:hover { border-color: var(--bright); }
   .drop-zone.drag-over { border-color: var(--white); }
-
   .drop-icon { font-size: 28px; color: var(--mid); line-height: 1; }
-  .drop-label {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    text-align: center;
-    line-height: 2;
-  }
+  .drop-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid); text-align: center; line-height: 2; }
   .drop-sub { font-size: 9px; letter-spacing: 0.15em; color: #252525; text-transform: uppercase; }
 
   #preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; }
@@ -116,104 +80,32 @@
   #file-input { display: none; }
 
   .controls { display: flex; flex-direction: column; padding: 36px 28px; }
-
-  .controls-title {
-    font-size: 9px;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--bright);
-    margin-bottom: 28px;
-  }
-
+  .controls-title { font-size: 9px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--bright); margin-bottom: 28px; }
   .control-group { padding: 18px 0; border-bottom: 1px solid var(--dim); }
-
   .control-label { display: flex; justify-content: space-between; margin-bottom: 12px; }
-
   .control-name { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--white); }
   .control-value { font-size: 9px; color: var(--bright); }
 
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 1px;
-    background: var(--mid);
-    outline: none;
-    cursor: pointer;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 9px; height: 9px;
-    background: var(--white);
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 1px; background: var(--mid); outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 9px; height: 9px; background: var(--white); border-radius: 50%; cursor: pointer; transition: transform 0.1s; }
   input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.5); }
 
   .toggle-group { display: flex; gap: 4px; }
-
-  .toggle-btn {
-    flex: 1;
-    background: none;
-    border: 1px solid var(--mid);
-    color: var(--bright);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 6px 4px;
-    cursor: pointer;
-    transition: all 0.1s;
-  }
+  .toggle-btn { flex: 1; background: none; border: 1px solid var(--mid); color: var(--bright); font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 4px; cursor: pointer; transition: all 0.1s; }
   .toggle-btn:hover { border-color: var(--bright); color: var(--white); }
   .toggle-btn.active { background: var(--white); color: var(--black); border-color: var(--white); }
 
   .actions { margin-top: auto; padding-top: 28px; display: flex; flex-direction: column; gap: 6px; }
-
-  .status {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--bright);
-    text-align: center;
-    padding: 8px 0;
-    min-height: 26px;
-  }
-
+  .status { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--bright); text-align: center; padding: 8px 0; min-height: 26px; }
   .progress-wrap { height: 1px; background: var(--dim); margin: 2px 0 8px; overflow: hidden; opacity: 0; transition: opacity 0.2s; }
   .progress-wrap.visible { opacity: 1; }
   .progress-fill { height: 100%; background: var(--white); width: 0%; transition: width 0.15s; }
 
-  .btn-generate {
-    width: 100%;
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    padding: 13px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
+  .btn-generate { width: 100%; background: var(--white); color: var(--black); border: none; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; padding: 13px; cursor: pointer; transition: opacity 0.15s; }
   .btn-generate:hover { opacity: 0.82; }
   .btn-generate:disabled { opacity: 0.18; cursor: not-allowed; }
 
-  .btn-download {
-    width: 100%;
-    background: none;
-    color: var(--white);
-    border: 1px solid var(--mid);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    padding: 13px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    display: none;
-  }
+  .btn-download { width: 100%; background: none; color: var(--white); border: 1px solid var(--mid); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; padding: 13px; cursor: pointer; transition: border-color 0.15s; display: none; }
   .btn-download:hover { border-color: var(--white); }
 </style>
 </head>
@@ -231,7 +123,6 @@
 </header>
 
 <div class="app">
-
   <div class="canvas-area">
     <div class="drop-zone" id="drop-zone">
       <div class="drop-icon">+</div>
@@ -289,8 +180,10 @@
       <button class="btn-download" id="btn-download">Download PNG</button>
     </div>
   </div>
-
 </div>
+
+<!-- Delaunator — battle-tested Delaunay triangulation -->
+<script src="https://cdn.jsdelivr.net/npm/delaunator@5.0.0/delaunator.min.js"></script>
 
 <script>
 let srcImage = null;
@@ -299,12 +192,13 @@ let strokeMode = 'none';
 
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
-const preview = document.getElementById('preview-img');
-const canvas = document.getElementById('output-canvas');
-const btnGen = document.getElementById('btn-generate');
-const btnDL = document.getElementById('btn-download');
-const statusEl = document.getElementById('status');
+const preview   = document.getElementById('preview-img');
+const canvas    = document.getElementById('output-canvas');
+const btnGen    = document.getElementById('btn-generate');
+const btnDL     = document.getElementById('btn-download');
+const statusEl  = document.getElementById('status');
 
+// ── Upload ────────────────────────────────────────────────────────────────────
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
@@ -336,19 +230,20 @@ function loadFile(file) {
   reader.readAsDataURL(file);
 }
 
+// ── Sliders ───────────────────────────────────────────────────────────────────
 ['points','edge'].forEach(id => {
   const sl = document.getElementById('sl-' + id);
   const vl = document.getElementById('val-' + id);
   sl.addEventListener('input', () => { vl.textContent = sl.value; });
 });
 
+// ── Toggles ───────────────────────────────────────────────────────────────────
 document.querySelectorAll('[data-mode]').forEach(b => {
   b.addEventListener('click', () => {
     document.querySelectorAll('[data-mode]').forEach(x => x.classList.remove('active'));
     b.classList.add('active'); colorMode = b.dataset.mode;
   });
 });
-
 document.querySelectorAll('[data-stroke]').forEach(b => {
   b.addEventListener('click', () => {
     document.querySelectorAll('[data-stroke]').forEach(x => x.classList.remove('active'));
@@ -356,6 +251,7 @@ document.querySelectorAll('[data-stroke]').forEach(b => {
   });
 });
 
+// ── Generate ──────────────────────────────────────────────────────────────────
 btnGen.addEventListener('click', generate);
 
 async function generate() {
@@ -366,9 +262,10 @@ async function generate() {
   setStatus('Sampling image...');
   await tick();
 
-  const nPts = parseInt(document.getElementById('sl-points').value);
+  const nPts     = parseInt(document.getElementById('sl-points').value);
   const edgeBias = parseInt(document.getElementById('sl-edge').value) / 100;
 
+  // Sample image into offscreen canvas
   const W = Math.min(srcImage.width, 800);
   const H = Math.round(srcImage.height * (W / srcImage.width));
   const off = document.createElement('canvas');
@@ -377,36 +274,54 @@ async function generate() {
   octx.drawImage(srcImage, 0, 0, W, H);
   const imgData = octx.getImageData(0, 0, W, H);
 
-  setProgress(15); setStatus('Detecting edges...'); await tick();
+  setProgress(20); setStatus('Detecting edges...'); await tick();
   const edges = sobelEdges(imgData);
 
-  setProgress(30); setStatus('Placing points...'); await tick();
+  setProgress(35); setStatus('Placing points...'); await tick();
   const pts = placePoints(edges, W, H, nPts, edgeBias);
 
-  setProgress(50); setStatus('Triangulating...'); await tick();
-  const tris = bowyerWatson(pts, W, H);
+  setProgress(50); setStatus('Triangulating ' + pts.length + ' points...'); await tick();
 
-  setProgress(80); setStatus('Rendering...'); await tick();
+  // Delaunator expects a flat [x0,y0,x1,y1,...] array
+  const coords = new Float64Array(pts.length * 2);
+  for (let i = 0; i < pts.length; i++) {
+    coords[i*2]   = pts[i][0];
+    coords[i*2+1] = pts[i][1];
+  }
+
+  const d = Delaunator.from(coords);
+  const triCount = d.triangles.length / 3;
+
+  setProgress(75); setStatus('Rendering ' + triCount + ' triangles...'); await tick();
 
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#080808';
   ctx.fillRect(0, 0, W, H);
 
-  for (const [a, b, c] of tris) {
-    const mx = (a[0]+b[0]+c[0])/3;
-    const my = (a[1]+b[1]+c[1])/3;
-    const col = getColor(imgData, W, mx, my, colorMode);
+  for (let i = 0; i < d.triangles.length; i += 3) {
+    const ai = d.triangles[i];
+    const bi = d.triangles[i+1];
+    const ci = d.triangles[i+2];
+
+    const ax = coords[ai*2], ay = coords[ai*2+1];
+    const bx = coords[bi*2], by = coords[bi*2+1];
+    const cx = coords[ci*2], cy = coords[ci*2+1];
+
+    const mx = (ax+bx+cx)/3;
+    const my = (ay+by+cy)/3;
+
     ctx.beginPath();
-    ctx.moveTo(a[0], a[1]);
-    ctx.lineTo(b[0], b[1]);
-    ctx.lineTo(c[0], c[1]);
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.lineTo(cx, cy);
     ctx.closePath();
-    ctx.fillStyle = col;
+    ctx.fillStyle = getColor(imgData, W, mx, my, colorMode);
     ctx.fill();
+
     if (strokeMode !== 'none') {
-      ctx.strokeStyle = strokeMode === 'soft' ? 'rgba(8,8,8,0.25)' : 'rgba(8,8,8,0.75)';
-      ctx.lineWidth = strokeMode === 'soft' ? 0.4 : 0.9;
+      ctx.strokeStyle = strokeMode === 'soft' ? 'rgba(8,8,8,0.25)' : 'rgba(8,8,8,0.8)';
+      ctx.lineWidth   = strokeMode === 'soft' ? 0.4 : 0.9;
       ctx.stroke();
     }
   }
@@ -416,10 +331,11 @@ async function generate() {
   canvas.style.display = 'block';
   btnGen.disabled = false;
   btnDL.style.display = 'block';
-  setStatus(tris.length + ' triangles generated');
+  setStatus(triCount + ' triangles generated');
   setTimeout(() => setProgress(0, false), 600);
 }
 
+// ── Download ──────────────────────────────────────────────────────────────────
 btnDL.addEventListener('click', () => {
   const a = document.createElement('a');
   a.download = 'ORG-lowpoly.png';
@@ -427,6 +343,7 @@ btnDL.addEventListener('click', () => {
   a.click();
 });
 
+// ── Edge Detection (Sobel) ────────────────────────────────────────────────────
 function sobelEdges(imgData) {
   const {width: W, height: H, data: d} = imgData;
   const out = new Float32Array(W * H);
@@ -447,58 +364,34 @@ function sobelEdges(imgData) {
   return out;
 }
 
+// ── Point Placement ───────────────────────────────────────────────────────────
 function placePoints(edges, W, H, n, bias) {
+  // Always include corners and edge midpoints
   const pts = [[0,0],[W-1,0],[0,H-1],[W-1,H-1],[W/2,0],[0,H/2],[W-1,H/2],[W/2,H-1]];
   let tries = 0;
-  while (pts.length < n + 8 && tries < n * 30) {
+  while (pts.length < n + 8 && tries < n * 40) {
     tries++;
     const x = Math.random() * W;
     const y = Math.random() * H;
     const e = edges[Math.floor(y)*W + Math.floor(x)] || 0;
-    if (Math.random() < (0.15 + bias * e * 2.5)) {
+    // Higher edge bias = more points near edges
+    const threshold = 0.1 + bias * e * 3.0;
+    if (Math.random() < threshold) {
       pts.push([
-        Math.max(0, Math.min(W-1, x + (Math.random()-0.5)*4)),
-        Math.max(0, Math.min(H-1, y + (Math.random()-0.5)*4))
+        Math.max(0, Math.min(W-1, x + (Math.random()-0.5)*3)),
+        Math.max(0, Math.min(H-1, y + (Math.random()-0.5)*3))
       ]);
     }
   }
   return pts;
 }
 
-function bowyerWatson(points, W, H) {
-  const m = Math.max(W, H) * 10;
-  const st = [[-m, -m], [W/2, H + m*2], [W + m, -m]];
-  let tris = [[st[0], st[1], st[2]]];
-  for (const p of points) {
-    let bad = tris.filter(t => inCircumcircle(t, p));
-    let poly = [];
-    for (const t of bad) {
-      for (let i = 0; i < 3; i++) {
-        const e = [t[i], t[(i+1)%3]];
-        const shared = bad.some(o => o !== t && o.some(v => eq(v,e[0])) && o.some(v => eq(v,e[1])));
-        if (!shared) poly.push(e);
-      }
-    }
-    tris = tris.filter(t => !bad.includes(t));
-    for (const e of poly) tris.push([e[0], e[1], p]);
-  }
-  return tris.filter(t => !t.some(v => st.some(s => eq(v,s))));
-}
-
-function inCircumcircle([a,b,c], p) {
-  const ax=a[0]-p[0], ay=a[1]-p[1];
-  const bx=b[0]-p[0], by=b[1]-p[1];
-  const cx=c[0]-p[0], cy=c[1]-p[1];
-  return (ax*ax+ay*ay)*(bx*cy-by*cx) - (bx*bx+by*by)*(ax*cy-ay*cx) + (cx*cx+cy*cy)*(ax*by-ay*bx) > 0;
-}
-
-function eq(a,b) { return a[0]===b[0] && a[1]===b[1]; }
-
+// ── Color Sampling ────────────────────────────────────────────────────────────
 function getColor(imgData, W, x, y, mode) {
   const px = Math.max(0, Math.min(imgData.width-1,  Math.round(x)));
   const py = Math.max(0, Math.min(imgData.height-1, Math.round(y)));
-  const i = (py*W+px)*4;
-  let r=imgData.data[i], g=imgData.data[i+1], b=imgData.data[i+2];
+  const i  = (py*W+px)*4;
+  let r = imgData.data[i], g = imgData.data[i+1], b = imgData.data[i+2];
   if (mode === 'mono' || mode === 'invert') {
     let v = Math.round(r*0.299 + g*0.587 + b*0.114);
     if (mode === 'invert') v = 255 - v;
@@ -507,6 +400,7 @@ function getColor(imgData, W, x, y, mode) {
   return `rgb(${r},${g},${b})`;
 }
 
+// ── Utils ─────────────────────────────────────────────────────────────────────
 function setStatus(msg) { statusEl.textContent = msg; }
 function tick() { return new Promise(r => setTimeout(r, 16)); }
 function setProgress(pct, show) {
