@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — Visual Glossary v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,700;1,300&family=IBM+Plex+Sans:wght@300;400;700;900&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --mid: #555;
+    --dim: #222;
+    --accent-yellow: #e8ff00;
+    --accent-red: #ff3020;
+    --accent-teal: #00e5cc;
+    --accent-blue: #1a1aff;
+    --accent-green: #39ff14;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    border-bottom: 1px solid #1a1a1a;
+    padding: 48px 56px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 14px; }
+
+  .logo-img {
+    width: 220px;
+    height: auto;
+    display: block;
+    mix-blend-mode: screen;
+    opacity: 0.92;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--white);
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .header-right {
+    text-align: right;
+    font-size: 10px;
+    color: var(--white);
+    line-height: 2.6;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .header-right a {
+    color: var(--white);
+    text-decoration: none;
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .header-right a:hover { opacity: 0.5; }
+
+  /* ── FILTER BAR ──────────────────────────── */
+  .filter-bar {
+    padding: 14px 48px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: rgba(8,8,8,0.97);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .filter-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: #333;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+
+  .filter-btn {
+    background: none;
+    border: 1px solid #1e1e1e;
+    color: #3a3a3a;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.1s;
+  }
+
+  .filter-btn:hover { border-color: #444; color: #666; }
+  .filter-btn.active { background: var(--white); color: var(--black); border-color: var(--white); }
+
+  .entry-count {
+    margin-left: auto;
+    font-size: 9px;
+    color: #252525;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── GRID ────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: #111;
+  }
+
+  .card {
+    background: var(--black);
+    cursor: pointer;
+    transition: background 0.12s;
+    position: relative;
+  }
+
+  .card:hover { background: #0d0d0d; }
+  .card.hidden { display: none; }
+
+  .canvas-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-bottom: 1px solid #111;
+    position: relative;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .pause-pill {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #222;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .card:hover .pause-pill { opacity: 1; }
+
+  .card-body { padding: 18px 22px 26px; }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .card-cat {
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #3a3a3a;
+  }
+
+  .card-register {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #222;
+    text-transform: uppercase;
+  }
+
+  .card-name {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 9px;
+    line-height: 1.2;
+  }
+
+  .card-desc {
+    font-size: 11px;
+    color: #5a5a5a;
+    line-height: 1.75;
+    margin-bottom: 13px;
+  }
+
+  .card-ref {
+    font-size: 10px;
+    color: #2e2e2e;
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+
+  .card-ref span { color: #3a3a3a; }
+
+  .cmd {
+    background: #0c0c0c;
+    border: 1px solid #181818;
+    padding: 9px 13px;
+    margin-bottom: 10px;
+  }
+
+  .cmd-label {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a2a2a;
+    margin-bottom: 3px;
+  }
+
+  .cmd-text { font-size: 11px; color: #666; }
+  .cmd-text strong { color: var(--white); }
+
+  .params {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 10px;
+  }
+
+  .param {
+    font-size: 8px;
+    letter-spacing: 0.06em;
+    border: 1px solid #181818;
+    padding: 2px 8px;
+    color: #303030;
+  }
+
+  /* ── COLOUR accent dot on card ───────────── */
+  .card-accent {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+    opacity: 0.7;
+  }
+
+  /* ── COMBINATIONS ────────────────────────── */
+  .section {
+    border-top: 1px solid #1a1a1a;
+    padding: 48px;
+  }
+
+  .section-head {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 48px;
+    margin-bottom: 32px;
+    align-items: start;
+  }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #333;
+    padding-top: 4px;
+  }
+
+  .section-desc {
+    font-size: 12px;
+    color: #4a4a4a;
+    line-height: 1.85;
+    max-width: 640px;
+  }
+
+  .combos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: #111;
+  }
+
+  .combo {
+    background: var(--black);
+    padding: 22px;
+  }
+
+  .combo-num {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #1e1e1e;
+    margin-bottom: 10px;
+  }
+
+  .combo-name {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 9px;
+  }
+
+  .combo-formula {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .combo-el {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    border: 1px solid #1e1e1e;
+    padding: 3px 9px;
+    color: #555;
+    text-transform: uppercase;
+  }
+
+  .combo-plus { font-size: 9px; color: #222; }
+
+  .combo-desc { font-size: 10px; color: #3e3e3e; line-height: 1.7; }
+  .combo-eg { margin-top: 8px; font-size: 10px; color: #2a2a2a; font-style: italic; }
+  .combo-eg strong { color: #444; font-style: normal; }
+
+  /* ── COLOUR GUIDE ────────────────────────── */
+  .colour-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1px;
+    background: #111;
+    margin-top: 0;
+  }
+
+  .colour-card {
+    background: var(--black);
+    padding: 20px;
+  }
+
+  .colour-swatch {
+    width: 100%;
+    aspect-ratio: 2/1;
+    margin-bottom: 12px;
+  }
+
+  .colour-name {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .colour-role {
+    font-size: 9px;
+    color: #333;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+
+  .colour-rule-text {
+    font-size: 11px;
+    color: #3e3e3e;
+    line-height: 1.9;
+    max-width: 600px;
+  }
+
+  .colour-rule-text strong { color: #555; }
+
+  /* ── BRIEF FORMAT ────────────────────────── */
+  .brief-wrap {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    padding: 32px;
+    max-width: 680px;
+    font-size: 11px;
+    color: #444;
+    line-height: 2;
+  }
+
+  .brief-wrap .brief-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--white);
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .brief-field {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    border-bottom: 1px solid #141414;
+    padding: 10px 0;
+  }
+
+  .brief-field:last-child { border-bottom: none; }
+  .brief-key { color: #333; letter-spacing: 0.1em; text-transform: uppercase; font-size: 9px; padding-top: 1px; }
+  .brief-val { color: #555; font-style: italic; }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    border-top: 1px solid #1a1a1a;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1e1e1e;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <img class="logo-img" src="data:image/png;base64,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" alt="ORG">
+    <span class="logo-sub">Visual Language Glossary — v3.0</span>
+  </div>
+  <div class="header-right">
+    <a href="https://instagram.com/odonataresearchgroup" target="_blank">Instagram</a>
+    <a href="https://github.com/odonata-research-group/org" target="_blank">GitHub</a>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <span class="filter-label">Filter:</span>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="dot">Dot · Grid</button>
+  <button class="filter-btn" data-filter="line">Line · Flow</button>
+  <button class="filter-btn" data-filter="particle">Particle</button>
+  <button class="filter-btn" data-filter="form">Form</button>
+  <button class="filter-btn" data-filter="portrait">Portrait</button>
+  <button class="filter-btn" data-filter="texture">Texture</button>
+  <button class="filter-btn" data-filter="type">Type</button>
+  <button class="filter-btn" data-filter="glitch">Glitch</button>
+  <button class="filter-btn" data-filter="data">Data</button>
+  <button class="filter-btn" data-filter="image">Image</button>
+  <button class="filter-btn" data-filter="systems">Systems</button>
+  <span class="entry-count" id="entry-count">32 entries</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- COMBINATIONS -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-label">Combinations<br>The Recipes</div>
+    <div class="section-desc">No ORG sketch uses a single element. These are proven pairings — each produces a distinct mood and use case. Pick a combination before you open p5.js. This is what kills the tinkering spiral.</div>
+  </div>
+  <div class="combos-grid" id="combos-grid"></div>
+</div>
+
+<!-- COLOUR -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-label">Colour<br>The System</div>
+    <div class="section-desc">ORG colour is intentional, never decorative. The foundation is always monochrome. Colour appears when it's doing a job — encoding data, creating hierarchy, signalling an exception. Use it surgically.</div>
+  </div>
+  <div class="colour-grid" id="colour-grid"></div>
+  <div style="margin-top:1px;background:#0a0a0a;padding:24px 28px;border-top:1px solid #111;">
+    <div class="colour-rule-text">
+      <strong>The 95/5 rule:</strong> 95% of ORG posts are monochrome. The remaining 5% use one accent colour, chosen because it does something specific — encodes a data dimension, creates maximum contrast against black, or marks a conceptual exception. The power of the accent comes entirely from its rarity. When you use colour every week, it means nothing. <strong>Default to black and white. Add colour only when it earns it.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- THE BRIEF FORMAT -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-label">The ORG Brief<br>Before You Code</div>
+    <div class="section-desc">Fill this out before opening p5.js. It's Tim Rodenbröker's Magic Triangle in practice — three constraints that make execution possible. If you can't fill it in, the idea isn't ready yet.</div>
+  </div>
+  <div class="brief-wrap">
+    <div class="brief-title">ORG Sketch Brief — Template</div>
+    <div class="brief-field">
+      <span class="brief-key">Combination</span>
+      <span class="brief-val">e.g. "The Joy Division" — Flow Lines + Data Waveform</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Visual element</span>
+      <span class="brief-val">e.g. "white flow lines on black, 28 rows"</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Concept / data</span>
+      <span class="brief-val">e.g. "loneliness = 15 cigarettes/day" or "my screen time by hour"</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Technical constraint</span>
+      <span class="brief-val">e.g. "noise-driven amplitude only, no interaction"</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Colour</span>
+      <span class="brief-val">e.g. "monochrome" or "one accent: acid yellow for peak value"</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Register</span>
+      <span class="brief-val">e.g. "dense · rhythmic" — where on the ORG spectrum?</span>
+    </div>
+    <div class="brief-field">
+      <span class="brief-key">Instagram hook</span>
+      <span class="brief-val">e.g. "the stat that stops the scroll"</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>ORG — Odonata Research Group — 2026</span>
+  <span>v3.0 — 80+ references · 32 entries · 10 categories</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script>
+
+// ─── PALETTE ────────────────────────────────
+const W = [238, 234, 226]; // off-white
+const B = [8, 8, 8];       // black
+
+// Helper: high-contrast alpha
+const ha = (base, a) => [...base, a];
+
+// ─── GLOSSARY ───────────────────────────────
+const GLOSSARY = [
+
+  // ── DOT · GRID ───────────────────────────
+
+  {
+    id:'dot-matrix', name:'Dot Matrix', cat:'dot', register:'dense · figurative',
+    desc:'A regular grid where each circle is sized by brightness, noise, or data. Form emerges from density — not outline. The face in the field. Every halftone portrait you\'ve ever saved lives here.',
+    ref:'Ref: halftone portraits, Wired Japan cover, pixel-dot faces',
+    cmd:'"dot matrix [subject]"',
+    params:['shape: circle / square','source: noise / image / data','bg: black / white'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cols=34,rows=34,cw=w/cols,t=p.frameCount*0.005;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let cx=x/cols-0.5,cy=y/rows-0.5,d=Math.sqrt(cx*cx+cy*cy);
+        let n=p.noise(x*.13,y*.13,t);
+        let profile=p.map(Math.max(0,.36-d),0,.36,0,1);
+        let sz=profile*n*cw*1.15;
+        p.noStroke();p.fill(...W,p.map(sz,0,cw,30,255));
+        p.circle((x+.5)*cw,(y+.5)*cw,sz);
+      }
+    }
+  },
+
+  {
+    id:'halftone-column', name:'Halftone Column', cat:'dot', register:'dense · architectural',
+    desc:'Dots in vertical columns, size driven by a wave or data value. Columns create rhythm — a bar chart that forgot it was a chart. Animated, it breathes like a speaker.',
+    ref:'Ref: yellow halftone dot column poster, Bridget Riley dot works',
+    cmd:'"halftone column"',
+    params:['cols: narrow/wide','modulation: wave/noise/data','invert: BonW / WonB'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cols=20,cw=w/cols,rows=30,t=p.frameCount*.013;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let py=(y/rows)*w;
+        let wave=p.sin(y*.2+t+x*.45)*.5+.5;
+        let n=p.noise(x*.28,y*.18,t*.4);
+        let sz=wave*n*cw*.92;
+        p.noStroke();p.fill(...W,220);
+        p.circle((x+.5)*cw,py,sz);
+      }
+    }
+  },
+
+  {
+    id:'point-cloud-form', name:'Point Cloud Form', cat:'dot', register:'sparse · implied',
+    desc:'Dots of varying sizes scattered to imply a shape without drawing its outline. The form lives in the space between points. Arrow, face, letter — all made of air and circles.',
+    ref:'Ref: dot arrow, pointillist geometry gifs',
+    cmd:'"point cloud [shape]"',
+    params:['density: sparse/dense','size-var: uniform/random','edge: hard/dissolving'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      if(!p._pts){
+        p._pts=[];
+        for(let i=0;i<500;i++){
+          let a=p.random(p.TWO_PI),r=p.random(1);
+          let px=w/2+p.cos(a)*w*.36*r;
+          let py=w/2+p.sin(a)*w*.18*Math.sqrt(1-(p.cos(a)**2)*.65)*(r<.1?.3:1);
+          p._pts.push({x:px,y:py,sz:p.random(2,10),ph:p.random(p.TWO_PI)});
+        }
+      }
+      let t=p.frameCount*.007;
+      p._pts.forEach(pt=>{
+        let pulse=p.sin(t+pt.ph)*.25+.75;
+        p.noStroke();p.fill(...W,pulse*230);
+        p.circle(pt.x,pt.y,pt.sz*pulse);
+      });
+    }
+  },
+
+  {
+    id:'data-dot-colour', name:'Data Dot — Colour', cat:'dot', register:'sparse · editorial',
+    desc:'A dot grid where colour encodes a data dimension. Three colours = three categories. Position = time. Size = magnitude. The Mondrian-adjacent approach — primary palette, no gradients, no grey areas.',
+    ref:'Ref: red/blue/black dot grid (CCC), coloured scatter data viz',
+    cmd:'"data dot colour [dataset]"',
+    params:['palette: primary/custom','encoding: colour=category','bg: white/black'],
+    accent:'#ff3020',
+    draw(p,w){
+      p.background(245,243,238);
+      let cols=14,rows=14,cw=w/cols,t=p.frameCount*.01;
+      const palette=[[220,40,20],[26,26,220],[20,20,20]];
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let n=p.noise(x*.25,y*.25,t);
+        let ci=Math.floor(n*3)%3;
+        let col=palette[ci];
+        let sz=p.map(p.noise(x*.3,y*.3,t*.5),0,1,4,cw*.55);
+        let pulse=p.sin(t*.6+x*.3+y*.4)*.15+.85;
+        p.noStroke();p.fill(...col,220);
+        p.circle((x+.5)*cw,(y+.5)*cw,sz*pulse);
+      }
+    }
+  },
+
+  // ── LINE · FLOW ──────────────────────────
+
+  {
+    id:'noise-field', name:'Noise Field', cat:'line', register:'medium · atmospheric',
+    desc:'Perlin noise rotates short lines at every grid cell. A wind map. A magnetic field. An invisible force made visible. The most versatile ORG element — calm or turbulent depending on speed.',
+    ref:'Ref: flow field works, wind map data viz, directional field gifs',
+    cmd:'"noise field"',
+    params:['speed: glacial/slow/fast','density: sparse/dense','mark: line/dot/arrow'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cols=26,rows=26,cw=w/cols,t=p.frameCount*.004;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let n=p.noise(x*.14,y*.14,t);
+        let angle=n*p.TWO_PI*2;
+        let px=(x+.5)*cw,py=(y+.5)*cw,len=cw*.44;
+        let a=p.map(p.noise(x*.2,y*.2,t*.5),0,1,25,200);
+        p.stroke(...W,a);p.strokeWeight(.8);
+        p.line(px,py,px+p.cos(angle)*len,py+p.sin(angle)*len);
+        p.noStroke();p.fill(...W,a*1.8);
+        p.circle(px+p.cos(angle)*len,py+p.sin(angle)*len,2);
+      }
+    }
+  },
+
+  {
+    id:'flow-lines', name:'Flow Lines', cat:'line', register:'dense · rhythmic',
+    desc:'Many parallel lines bending in unison — sound waves frozen mid-motion. Each line follows the same curve but offset in time. The ORG workhorse for rhythm. Joy Division. Kraftwerk. Data made musical.',
+    ref:'Ref: Kraftwerk Radio-Activity poster, Joy Division Unknown Pleasures, flow line fields',
+    cmd:'"flow lines"',
+    params:['count: 12–40','curve: wave/arc/noise','termination: open/dot/fade'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let count=30,t=p.frameCount*.015;
+      for(let l=0;l<count;l++){
+        let y=p.map(l,0,count-1,w*.08,w*.92);
+        let layerT=t-l*.07;
+        let alpha=p.map(l,0,count-1,35,215);
+        p.beginShape();p.noFill();
+        p.stroke(...W,alpha);p.strokeWeight(.75);
+        for(let x=0;x<=w;x+=4){
+          let xn=x/w;
+          let amp=p.map(Math.sin(xn*p.PI),0,1,0,w*.032);
+          let yn=y+Math.sin(xn*p.PI*3+layerT)*amp+Math.sin(xn*p.PI*6.2+layerT*1.4)*amp*.28;
+          p.vertex(x,yn);
+        }
+        p.endShape();
+        p.noStroke();p.fill(...W,alpha);p.circle(w-2,y,2.5);
+      }
+    }
+  },
+
+  {
+    id:'contour-field', name:'Contour Field', cat:'line', register:'dense · topographic',
+    desc:'Dense parallel curves bending over a noise surface — like a topographic map or MRI scan in motion. The lines are equally spaced but warp to reveal the invisible terrain beneath.',
+    ref:'Ref: black/white contour field gif, flowing stripe forms',
+    cmd:'"contour field"',
+    params:['lines: 20–60','warp: subtle/strong','style: BonW/WonB/colour'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let rows=38,t=p.frameCount*.008;
+      for(let r=0;r<rows;r++){
+        let baseY=p.map(r,0,rows-1,w*.03,w*.97);
+        let alpha=p.map(r,0,rows-1,60,220);
+        p.beginShape();p.noFill();
+        p.stroke(...W,alpha);p.strokeWeight(.9);
+        for(let x=0;x<=w;x+=3){
+          let n=p.noise(x*.006,r*.15,t);
+          let warp=(n-.5)*w*.18;
+          p.vertex(x,baseY+warp);
+        }
+        p.endShape();
+      }
+    }
+  },
+
+  {
+    id:'gradient-lines', name:'Gradient + Grain Lines', cat:'line', register:'medium · poster',
+    desc:'Vertical columns that fade with soft gradients and film grain. The blankposter.com aesthetic. Swiss modernism meets the darkroom. Hard-edged geometry made tactile by noise texture.',
+    ref:'Ref: Stefan Hürlemann word-large poster, blankposter entity poster, gradient columns',
+    cmd:'"gradient lines [form]"',
+    params:['form: columns/blocks','grain: subtle/heavy','palette: BonW/WonB/colour'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cols=12,cw=w/cols,t=p.frameCount*.005;
+      for(let c=0;c<cols;c++){
+        let n=p.noise(c*.28,t);
+        let h=p.map(n,0,1,w*.12,w*.9);
+        let off=p.map(p.noise(c*.3,t*.5),0,1,0,w*.28);
+        for(let y=0;y<w;y++){
+          if(y<off||y>off+h) continue;
+          let ft=(y-off)/h;
+          let fa=Math.sin(ft*p.PI)*p.map(n,0,1,30,200);
+          let grain=(p.random()-.5)*22;
+          p.stroke(Math.min(255,W[0]+grain),Math.min(255,W[1]+grain),Math.min(255,W[2]+grain),fa);
+          p.strokeWeight(cw-1.5);
+          p.point((c+.5)*cw,y);
+        }
+      }
+    }
+  },
+
+  // ── PARTICLE ────────────────────────────
+
+  {
+    id:'particle-cloud', name:'Particle Cloud', cat:'particle', register:'dense · atmospheric',
+    desc:'Thousands of bright points clustering around an implied shape. The form is never explicit — suggested by density. Weather, physics, data. The most otherworldly ORG element.',
+    ref:'Ref: particle ring gif, vortex particle field, particle figure',
+    cmd:'"particle cloud [shape]"',
+    params:['count: 500–5000','attraction: none/radial/shape','decay: persistent/fading'],
+    accent:null,
+    draw(p,w){
+      p.background(...B,22);
+      if(!p._pc){
+        p._pc=Array.from({length:700},()=>({
+          x:p.random(w),y:p.random(w),
+          vx:p.random(-.5,.5),vy:p.random(-.5,.5),
+          ph:p.random(p.TWO_PI)
+        }));
+      }
+      let t=p.frameCount*.007;
+      p._pc.forEach(pt=>{
+        let dx=pt.x-w/2,dy=pt.y-w/2,dist=Math.sqrt(dx*dx+dy*dy);
+        let tr=w*.3,force=(dist-tr)*.004;
+        pt.vx-=(dx/dist)*force;pt.vy-=(dy/dist)*force;
+        let n=p.noise(pt.x*.006,pt.y*.006,t);
+        pt.vx+=p.cos(n*p.TWO_PI*2)*.09;
+        pt.vy+=p.sin(n*p.TWO_PI*2)*.09;
+        pt.vx*=.97;pt.vy*=.97;
+        pt.x+=pt.vx;pt.y+=pt.vy;
+        if(pt.x<0)pt.x=w;if(pt.x>w)pt.x=0;
+        if(pt.y<0)pt.y=w;if(pt.y>w)pt.y=0;
+        // HIGH CONTRAST — bright white particles
+        let alpha=p.map(p.sin(t*.4+pt.ph),-1,1,120,255);
+        p.stroke(...W,alpha);p.strokeWeight(1.8);p.point(pt.x,pt.y);
+      });
+    }
+  },
+
+  {
+    id:'flowing-trails', name:'Flowing Trails', cat:'particle', register:'sparse · organic',
+    desc:'Noise-driven paths that curl, loop, and drift — each with a bright glowing endpoint. Looks like organisms, root systems, or neural paths traced in light. The most biological ORG element.',
+    ref:'Ref: organic curl trails gif, particle root/branch forms',
+    cmd:'"flowing trails"',
+    params:['count: 8–30','persistence: fading/lasting','endpoint: dot/glow/none'],
+    accent:null,
+    draw(p,w){
+      p.background(...B,16);
+      if(!p._ft){
+        p._ft=Array.from({length:22},()=>({
+          x:w/2+p.random(-w*.12,w*.12),y:w*.62+p.random(-w*.05,w*.05),
+          vx:p.random(-.3,.3),vy:p.random(-1.6,-.5),
+          age:0,maxAge:p.random(120,300),seed:p.random(1000)
+        }));
+      }
+      p._ft.forEach((a,i)=>{
+        a.age++;
+        if(a.age>a.maxAge){
+          p._ft[i]={x:w/2+p.random(-w*.12,w*.12),y:w*.65+p.random(-w*.05,w*.05),
+            vx:p.random(-.3,.3),vy:p.random(-1.6,-.5),
+            age:0,maxAge:p.random(120,300),seed:p.random(1000)};
+          return;
+        }
+        let n=p.noise(a.x*.004,a.y*.004,a.seed+p.frameCount*.003);
+        let angle=n*p.TWO_PI*2.4;
+        a.vx=a.vx*.88+p.cos(angle)*.4;a.vy=a.vy*.88+p.sin(angle)*.4;
+        a.x+=a.vx;a.y+=a.vy;
+        let life=1-a.age/a.maxAge;
+        // bright trailing line
+        p.stroke(...W,life*180);p.strokeWeight(.8);p.point(a.x,a.y);
+        if(a.age>a.maxAge*.85){
+          p.noStroke();p.fill(...W,life*255);p.circle(a.x,a.y,5);
+        }
+      });
+    }
+  },
+
+  {
+    id:'particle-scatter', name:'Particle Scatter', cat:'particle', register:'medium · data',
+    desc:'A directed particle emission — particles launched from a point, spreading as they travel. Tornado, fountain, explosion. Use for showing distribution, dispersion, spread of a phenomenon.',
+    ref:'Ref: blue background particle scatter gif, white tornado particles',
+    cmd:'"particle scatter [direction]"',
+    params:['origin: point/line/area','direction: up/radial/wind','speed: slow/fast'],
+    accent:'#1a1aff',
+    draw(p,w){
+      p.background(18,22,40);
+      if(!p._ps){
+        p._ps=Array.from({length:300},()=>({
+          x:w*.5+p.random(-w*.08,w*.08),y:w*.7,
+          vx:p.random(-1.2,1.2),vy:p.random(-3,-0.8),
+          life:p.random(1),sz:p.random(2,5)
+        }));
+      }
+      p._ps.forEach((pt,i)=>{
+        pt.x+=pt.vx+p.noise(pt.x*.01,pt.y*.01,p.frameCount*.005)*1.2-.6;
+        pt.y+=pt.vy;pt.vy*=.99;pt.vx*=.99;
+        pt.life-=.006;
+        if(pt.life<=0){
+          p._ps[i]={x:w*.5+p.random(-w*.08,w*.08),y:w*.7,
+            vx:p.random(-1.2,1.2),vy:p.random(-3,-.8),
+            life:1,sz:p.random(2,5)};
+          return;
+        }
+        // bright white on dark blue
+        p.noStroke();p.fill(255,255,255,pt.life*230);
+        p.circle(pt.x,pt.y,pt.sz*pt.life);
+      });
+    }
+  },
+
+  // ── FORM ────────────────────────────────
+
+  {
+    id:'moire-stripe', name:'Moiré / Op-Art', cat:'form', register:'dense · optical',
+    desc:'Two stripe or circle fields creating optical vibration between them. The form exists in the interference pattern. Bridget Riley territory. Use it to make the viewer feel something physical.',
+    ref:'Ref: B&W stripe lens form, op-art eye shape, Bridget Riley',
+    cmd:'"moire [shape]"',
+    params:['pattern: stripes/circles/grid','shape: lens/diamond/none','motion: static/shift'],
+    accent:null,
+    draw(p,w){
+      p.background(...W);
+      let cx=w/2,cy=w/2,t=p.frameCount*.003;
+      let stripeW=p.map(p.sin(t),-1,1,6,14);
+      p.noStroke();
+      for(let y=0;y<w;y+=stripeW*2){
+        p.fill(...B,220);p.rect(0,y,w,stripeW);
+      }
+      // lens mask with different frequency
+      let lensH=w*.42,lensW=w*.22;
+      p.noStroke();
+      for(let y=0;y<w;y++){
+        let dy=(y-cy)/lensH;
+        if(Math.abs(dy)>1) continue;
+        let lx=Math.sqrt(1-dy*dy)*lensW;
+        let stripeW2=stripeW*.72+p.sin(t*1.3)*.5;
+        for(let x=cx-lx;x<cx+lx;x+=stripeW2*2){
+          p.fill(...B,220);p.rect(x,y,stripeW2,1);
+        }
+        // clear the lens region first
+        p.fill(...W,220);p.rect(cx-lx,y,lx*2,1);
+        for(let x=cx-lx;x<cx+lx;x+=stripeW2*2){
+          p.fill(...B,220);p.rect(x,y,stripeW2,1);
+        }
+      }
+    }
+  },
+
+  {
+    id:'low-poly-mesh', name:'Low-Poly Mesh', cat:'form', register:'medium · structural',
+    desc:'A surface subdivided into triangular faces — the world reduced to its geometric skeleton. Landscape, portrait, abstract field. The mesh makes visible the invisible structure underneath everything.',
+    ref:'Ref: wireframe landscape gif, low-poly mountain, triangulated portrait',
+    cmd:'"low poly [subject]"',
+    params:['density: coarse/fine','style: wireframe/filled/both','motion: static/flex'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      if(!p._mesh){
+        p._mesh=[];
+        let cols=12,rows=8;
+        for(let x=0;x<=cols;x++) for(let y=0;y<=rows;y++){
+          p._mesh.push({
+            bx:(x/cols)*w,by:(y/rows)*w,
+            ox:p.random(-20,20),oy:p.random(-20,20),
+            vx:p.random(-.2,.2),vy:p.random(-.2,.2)
+          });
+        }
+      }
+      let cols=12;
+      p._mesh.forEach(pt=>{
+        pt.ox+=pt.vx;pt.oy+=pt.vy;
+        if(Math.abs(pt.ox)>25)pt.vx*=-1;
+        if(Math.abs(pt.oy)>25)pt.vy*=-1;
+      });
+      let rows=8;
+      p.noFill();
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let i=x*(rows+1)+y;
+        let a=p._mesh[i],b=p._mesh[i+1];
+        let c=p._mesh[(x+1)*(rows+1)+y],d=p._mesh[(x+1)*(rows+1)+y+1];
+        if(!a||!b||!c||!d) continue;
+        let brightness=p.map(p.noise(x*.2,y*.2,p.frameCount*.006),0,1,40,220);
+        p.stroke(...W,brightness);p.strokeWeight(.7);
+        p.triangle(a.bx+a.ox,a.by+a.oy,b.bx+b.ox,b.by+b.oy,c.bx+c.ox,c.by+c.oy);
+        p.triangle(b.bx+b.ox,b.by+b.oy,c.bx+c.ox,c.by+c.oy,d.bx+d.ox,d.by+d.oy);
+      }
+    }
+  },
+
+  {
+    id:'geo-type-construct', name:'Geometric Type', cat:'form', register:'sparse · constructivist',
+    desc:'Letterforms and numerals built entirely from geometric primitives — circles, rectangles, triangles. No curves that aren\'t a circle. No diagonals that aren\'t 45°. The letter as architecture.',
+    ref:'Ref: 36DaysOfType geometric 3, N letterform construction, Bauhaus type',
+    cmd:'"geo type [character]"',
+    params:['primitives: circles/rects/triangles','weight: light/heavy','bg: black/colour'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let t=p.frameCount*.006;
+      let s=w*.68,ox=w*.16,oy=w*.16;
+      // Geometric '3': rectangle top + two circles
+      let pulse=p.map(p.sin(t),-1,1,.94,1.06);
+      p.noStroke();p.fill(...W,230);
+      // top rectangle
+      p.rect(ox,oy,s*.55*pulse,s*.28*pulse);
+      // middle bar
+      p.rect(ox,oy+s*.34*pulse,s*.55*pulse,s*.1*pulse);
+      // bottom circle
+      p.noFill();p.stroke(...W,200);p.strokeWeight(s*.1*pulse);
+      p.circle(ox+s*.28*pulse,oy+s*.72*pulse,s*.38*pulse);
+    }
+  },
+
+  // ── PORTRAIT ────────────────────────────
+
+  {
+    id:'pixel-sort-portrait', name:'Pixel Sort Portrait', cat:'portrait', register:'dense · dissolving',
+    desc:'A photograph where pixels are sorted by brightness within columns or rows, creating vertical or horizontal streaks. The face is readable but rendered in falling light. Tim Rodenbröker\'s signature technique.',
+    ref:'Ref: pixel sort face gifs, vertical sort portrait, horizontal sort body',
+    cmd:'"pixel sort [image]"',
+    params:['axis: vertical/horizontal','threshold: dark/mid/bright','colour: mono/keep'],
+    accent:null,
+    draw(p,w){
+      p.background(200,198,194);
+      // Simulate pixel sort with vertical streaks
+      let cols=w,t=p.frameCount*.008;
+      p.noStroke();
+      for(let x=0;x<cols;x+=2){
+        let n=p.noise(x*.015,t);
+        let sortStart=p.map(n,0,1,w*.1,w*.4);
+        let sortLen=p.map(p.noise(x*.02,t*.5),0,1,w*.2,w*.7);
+        // above sort: normal dot grid hint
+        for(let y=0;y<sortStart;y+=4){
+          let bn=p.noise(x*.02,y*.02,t);
+          p.fill(p.map(bn,0,1,20,180),p.map(bn,0,1,18,170),p.map(bn,0,1,16,160),160);
+          p.rect(x,y,2,3);
+        }
+        // sorted region: stretched bright streak
+        let brightness=p.map(p.noise(x*.018,t),0,1,140,255);
+        p.fill(brightness,brightness*.97,brightness*.94,200);
+        p.rect(x,sortStart,2,sortLen);
+        // below: fade to dark
+        for(let y=sortStart+sortLen;y<w;y+=4){
+          let bn=p.noise(x*.02,y*.02,t*.8);
+          p.fill(p.map(bn,0,1,10,80),p.map(bn,0,1,8,75),p.map(bn,0,1,8,70),140);
+          p.rect(x,y,2,3);
+        }
+      }
+    }
+  },
+
+  {
+    id:'radial-shatter', name:'Radial Shatter', cat:'portrait', register:'dense · explosive',
+    desc:'An image sliced into triangular wedges radiating from a central point — like a zoom burst frozen, or a face exploding outward. Each wedge contains a fragment of the original.',
+    ref:'Ref: radial shatter face portraits, zoom burst photography, triangulated portrait series',
+    cmd:'"radial shatter [image]"',
+    params:['origin: face/custom','slices: 12–80','rotation: static/slow-spin'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cx=w*.5,cy=w*.46,slices=32,t=p.frameCount*.006;
+      for(let i=0;i<slices;i++){
+        let a1=(i/slices)*p.TWO_PI+t*.05;
+        let a2=((i+1)/slices)*p.TWO_PI+t*.05;
+        let len=p.map(p.noise(i*.18,t*.4),0,1,w*.22,w*.52);
+        let brightness=p.map(p.noise(i*.22,t*.3),0,1,60,240);
+        let alpha=p.map(p.noise(i*.15,t*.5),0,1,120,255);
+        p.noStroke();p.fill(brightness,brightness*.97,brightness*.95,alpha);
+        p.triangle(
+          cx,cy,
+          cx+p.cos(a1)*len,cy+p.sin(a1)*len,
+          cx+p.cos(a2)*len,cy+p.sin(a2)*len
+        );
+        // thin line between slices
+        p.stroke(...B,180);p.strokeWeight(1);
+        p.line(cx,cy,cx+p.cos(a1)*len,cy+p.sin(a1)*len);
+      }
+    }
+  },
+
+  // ── TEXTURE ─────────────────────────────
+
+  {
+    id:'signal-noise', name:'Signal · Noise', cat:'texture', register:'dense · atmospheric',
+    desc:'The raw material of meaning. Pure noise is static. Signal is pattern emerging from static. This tension — order vs chaos — is ORG\'s core visual metaphor. The scanline effect adds vintage texture.',
+    ref:'Ref: signal/noise field gifs, scanline texture, static glitch backgrounds',
+    cmd:'"signal noise"',
+    params:['ratio: noise/balanced/signal','scanlines: none/subtle/heavy','resolution: fine/coarse'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let res=3,t=p.frameCount;
+      for(let x=0;x<w;x+=res) for(let y=0;y<w;y+=res){
+        let n=p.noise(x*.022,y*.022,t*.007);
+        let scan=p.sin(y*.35+t*.08)*.3+.7;
+        let v=n*scan;
+        let alpha=p.map(v,0,1,0,230);
+        if(p.random()>.97) alpha=p.random(200,255);
+        p.noStroke();p.fill(...W,alpha);p.rect(x,y,res,res);
+      }
+    }
+  },
+
+  {
+    id:'gestural-hatching', name:'Gestural Hatching', cat:'texture', register:'medium · analogue',
+    desc:'Dense parallel lines drawn with slight variation — the plotter aesthetic, the charcoal texture. Vertical, horizontal, diagonal. Where the computational becomes handmade. Light on dark, dark on light.',
+    ref:'Ref: dense vertical hatching gif, charcoal line fill, ink brush batch',
+    cmd:'"gestural hatch [direction]"',
+    params:['direction: V/H/diagonal','spacing: tight/loose','variation: uniform/noise'],
+    accent:null,
+    draw(p,w){
+      p.background(230,228,223);
+      let count=55,t=p.frameCount*.004;
+      for(let i=0;i<count;i++){
+        let x=p.map(i,0,count-1,w*.06,w*.94);
+        let wobble=p.noise(i*.12,t)*w*.018;
+        let alpha=p.map(p.noise(i*.15,t*.6),0,1,40,200);
+        p.stroke(15,13,12,alpha);p.strokeWeight(2.5);
+        p.line(x+wobble,w*.04,x-wobble,w*.96);
+      }
+    }
+  },
+
+  {
+    id:'ascii-texture', name:'ASCII Texture', cat:'texture', register:'dense · terminal',
+    desc:'Characters used as pixels. Brightness encoded in character density. A face, gradient, or data field — all made from type. The terminal as canvas. Deeply ORG when paired with coloured backgrounds.',
+    ref:'Ref: ASCII portrait gifs, coloured ASCII face, monospace texture fields',
+    cmd:'"ascii [source]"',
+    params:['charset: dense/sparse/custom','source: noise/image/data','colour: mono/two-tone'],
+    accent:'#39ff14',
+    draw(p,w){
+      p.background(...B);
+      let chars='█▓▒░·:;!|#+ORG'.split('');
+      let sz=11,cols=Math.floor(w/(sz*.62)),rows=Math.floor(w/sz),t=p.frameCount*.007;
+      p.textFont('monospace');p.textSize(sz*.74);p.noStroke();p.textAlign(p.LEFT,p.TOP);
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let n=p.noise(x*.11,y*.11,t);
+        // centre brightness falloff
+        let cx=x/cols-.5,cy=y/rows-.5;
+        let d=Math.sqrt(cx*cx+cy*cy);
+        let profile=p.map(Math.max(0,.45-d),0,.45,0,1);
+        let idx=Math.floor((1-(n*profile))*chars.length*.95);
+        idx=p.constrain(idx,0,chars.length-1);
+        let alpha=p.map(n*profile,0,1,15,240);
+        p.fill(...W,alpha);
+        p.text(chars[idx],x*(w/cols),y*(w/rows));
+      }
+    }
+  },
+
+  // ── TYPE ────────────────────────────────
+
+  {
+    id:'kinetic-type', name:'Kinetic Typography', cat:'type', register:'variable · expressive',
+    desc:'The word is the visual. Letters that build, breathe, orbit, or distort. Not decoration — the type IS the sketch. ORG identity lives here. Always intentional, never random.',
+    ref:'Ref: ORG letterform animation, WAVES word shape, echo type forms',
+    cmd:'"kinetic type [word]"',
+    params:['motion: build/breathe/distort/orbit','weight: thin/bold','spacing: tight/open'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.textAlign(p.CENTER,p.CENTER);p.noStroke();
+      let t=p.frameCount,word='ORG';
+      // ghost layers
+      for(let l=10;l>0;l--){
+        let off=l*w*.003;
+        p.fill(...W,l*2.5);
+        p.textFont('monospace');p.textSize(w*.28);
+        p.text(word,w/2+p.sin(t*.018)*off,w/2+p.cos(t*.013)*off);
+      }
+      word.split('').forEach((ch,i)=>{
+        let ox=p.map(i,0,2,-w*.2,w*.2);
+        let wave=p.sin(t*.033+i*1.28)*w*.024;
+        let sz=w*.245+p.sin(t*.026+i*.9)*w*.014;
+        let alpha=p.map(p.sin(t*.021+i*1.55),-1,1,170,255);
+        p.fill(...W,alpha);p.textSize(sz);
+        p.text(ch,w/2+ox,w/2+wave);
+      });
+      p.textSize(w*.022);p.fill(...W,30);
+      p.text('VISUAL LANGUAGE — 2025',w/2,w*.83);
+    }
+  },
+
+  {
+    id:'echo-type', name:'Echo Type', cat:'type', register:'dense · volumetric',
+    desc:'A single letterform stacked with many offset copies, each slightly more transparent. Builds the illusion of volume, blur, or dimensional depth. The letter becomes architecture.',
+    ref:'Ref: G echo letterform gif, halftone letter with stacked repeat, pixelated "a" form',
+    cmd:'"echo type [letter]"',
+    params:['layers: 5–30','offset: radial/directional/noise','decay: linear/exponential'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.textAlign(p.CENTER,p.CENTER);p.noStroke();
+      let t=p.frameCount*.01,ch='G',layers=26;
+      for(let l=layers;l>=0;l--){
+        let prog=l/layers;
+        let sz=w*(.28+prog*.1);
+        let ox=p.sin(t+l*.14)*l*w*.0019;
+        let oy=p.cos(t*.72+l*.11)*l*w*.0013;
+        let alpha=p.map(l,layers,0,215,0);
+        p.fill(...W,alpha);p.textFont('monospace');p.textSize(sz);
+        p.text(ch,w/2+ox,w/2+oy);
+      }
+    }
+  },
+
+  {
+    id:'word-shape', name:'Word Shape', cat:'type', register:'medium · conceptual',
+    desc:'The word repeating until it fills and defines a shape. WAVES arranged in a wave. ORG filling an O. The concept and the visual form become identical — maximum conceptual satisfaction.',
+    ref:'Ref: WAVES word-grid poster, type-as-texture compositions',
+    cmd:'"word shape [word] [form]"',
+    params:['word: any','form: circle/wave/letter','size: uniform/gradient'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.noStroke();p.textAlign(p.CENTER,p.CENTER);
+      let word='ORG ',t=p.frameCount*.004;
+      let cols=10,rows=10,cw=w/cols;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let cx=( x+.5)/cols-.5,cy=(y+.5)/rows-.5;
+        let dist=Math.sqrt(cx*cx+cy*cy);
+        if(dist>.4) continue;
+        let n=p.noise(x*.28,y*.28,t);
+        let sz=p.map(dist,0,.4,w*.05,w*.024);
+        let alpha=p.map(dist,0,.4,240,55)*p.map(n,0,1,.4,1);
+        p.fill(...W,alpha);p.textFont('monospace');p.textSize(sz);
+        p.text(word[(x*rows+y)%word.length],(x+.5)*cw,(y+.5)*cw);
+      }
+    }
+  },
+
+  {
+    id:'type-on-path', name:'Type on Path', cat:'type', register:'sparse · fluid',
+    desc:'Letters distributed along a curve — sine wave, spiral, orbit. Each character rotated to follow the path tangent. The sentence becomes the shape. Size can vary with path position.',
+    ref:'Ref: "creative coding explorations" sine path gif, text wave animations',
+    cmd:'"type on path [text] [curve]"',
+    params:['path: sine/circle/spiral','size: uniform/varied','rotation: follow/upright'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.textAlign(p.CENTER,p.CENTER);p.noStroke();
+      let text='ORGORGORGORGORGORGORGORGORGORG'.split('');
+      let t=p.frameCount*.012;
+      let totalW=w*.85,startX=w*.075;
+      text.forEach((ch,i)=>{
+        let xn=i/text.length;
+        let x=startX+xn*totalW;
+        let freq=2.8,amp=w*.12;
+        let y=w*.5+Math.sin(xn*p.PI*freq+t)*amp;
+        let dy=Math.cos(xn*p.PI*freq+t)*amp*p.PI*freq/totalW;
+        let angle=Math.atan2(dy,1);
+        let sz=p.map(Math.abs(Math.sin(xn*p.PI*freq+t)),0,1,w*.028,w*.048);
+        let alpha=p.map(Math.sin(xn*p.PI*freq+t),-1,1,120,255);
+        p.fill(...W,alpha);p.textSize(sz);p.textFont('monospace');
+        p.push();p.translate(x,y);p.rotate(angle);p.text(ch,0,0);p.pop();
+      });
+    }
+  },
+
+  {
+    id:'data-type', name:'Data Typography', cat:'type', register:'sparse · editorial',
+    desc:'The number IS the design. A single massive statistic, annotated minimally, typeset with intention. The "15 cigarettes = loneliness" format. Data made arresting through type scale alone.',
+    ref:'Ref: NYT data viz text treatments, editorial stat posters, infographic type',
+    cmd:'"data type [stat] [context]"',
+    params:['number: display scale','annotation: minimal/rich','bg: black/white/colour'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.textAlign(p.CENTER,p.CENTER);p.noStroke();
+      let t=p.frameCount*.012;
+      // big number
+      let pulse=p.map(p.sin(t),-1,1,.97,1.03);
+      p.fill(...W,240);p.textFont('monospace');
+      p.textSize(w*.38*pulse);p.text('15',w/2,w*.38);
+      // annotation
+      p.textSize(w*.042);p.fill(...W,160);
+      p.text('cigarettes',w/2,w*.61);
+      p.textSize(w*.028);p.fill(...W,80);
+      p.text('= the social damage of loneliness',w/2,w*.72);
+      // divider
+      p.stroke(...W,40);p.strokeWeight(.5);
+      p.line(w*.2,w*.52,w*.8,w*.52);
+      // small label
+      p.noStroke();p.textSize(w*.018);p.fill(...W,35);
+      p.text('PER DAY — HOLT-LUNSTAD ET AL',w/2,w*.84);
+    }
+  },
+
+  // ── GLITCH ──────────────────────────────
+
+  {
+    id:'glitch-slice', name:'Glitch Slice', cat:'glitch', register:'medium · corrupted',
+    desc:'Horizontal slices of an image displaced randomly. Signal corruption. The digital breaking down. A powerful accent technique — use it on type or portraits for maximum impact.',
+    ref:'Ref: glitch type gifs, glitch face portraits, DIGEN type treatment',
+    cmd:'"glitch [subject]"',
+    params:['intensity: subtle/medium/extreme','type: slice/pixel/both','colour: none/RGB-split'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      if(!p._gb){
+        p._gb=p.createGraphics(w,w);
+        p._gb.background(...B);
+        p._gb.fill(...W);p._gb.noStroke();
+        p._gb.textAlign(p.CENTER,p.CENTER);
+        p._gb.textFont('monospace');p._gb.textSize(w*.3);
+        p._gb.text('ORG',w/2,w/2);
+      }
+      let t=p.frameCount,slices=40,sh=w/slices;
+      p.image(p._gb,0,0);
+      if(t%3===0){
+        for(let s=0;s<slices;s++){
+          if(p.random()>.82){
+            let offset=p.random(-w*.09,w*.09);
+            p.copy(p._gb,0,s*sh,w,sh,offset,s*sh,w,sh);
+            if(p.random()>.72){
+              p.blendMode(p.DIFFERENCE);
+              p.fill(...W,55);p.noStroke();p.rect(0,s*sh,w,sh);
+              p.blendMode(p.BLEND);
+            }
+          }
+        }
+      }
+    }
+  },
+
+  {
+    id:'pixel-step', name:'Pixel Step', cat:'glitch', register:'medium · digital',
+    desc:'Smooth curves rendered as staircase pixel steps. The analogue form in digital language. Letterforms, faces, or shapes reduced to coarse grid representation. The aliased edge as design choice.',
+    ref:'Ref: pixelated "full" type gif, stepped letterforms, low-res portrait book spread',
+    cmd:'"pixel step [subject]"',
+    params:['resolution: coarse/medium/fine','style: pure/hybrid','colour: mono/two-tone'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let res=16,cols=Math.floor(w/res),rows=Math.floor(w/res),t=p.frameCount*.009;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        let nx=(x/cols-.5)*2.2,ny=(y/rows-.5)*2.2;
+        let r=Math.sqrt(nx*nx+ny*ny);
+        let inO=r>.52&&r<.98;
+        let n=p.noise(x*.1,y*.1,t);
+        if(inO&&n>.28){
+          let alpha=p.map(n,.28,1,90,255);
+          let pulse=p.sin(p.frameCount*.038+r*3)*.25+.75;
+          p.noStroke();p.fill(...W,alpha*pulse);
+          p.rect(x*res,y*res,res-1,res-1);
+        }
+      }
+    }
+  },
+
+  // ── DATA ────────────────────────────────
+
+  {
+    id:'star-chart', name:'Star Chart / Diagram', cat:'data', register:'sparse · precise',
+    desc:'Sparse dots with numeric labels, dashed connecting lines, hollow and solid node markers. Like a navigation instrument or physics experiment. The most editorial ORG register — NYT data viz energy.',
+    ref:'Ref: orbital diagram gif, scattered data points with numbers, scientific notation',
+    cmd:'"star chart"',
+    params:['bg: light grey/black','labels: numbers/text/none','lines: solid/dashed/none'],
+    accent:null,
+    draw(p,w){
+      p.background(215,213,208);
+      let t=p.frameCount*.005;
+      if(!p._sc){
+        p._sc=Array.from({length:16},()=>({
+          x:p.random(w*.15,w*.85),y:p.random(w*.15,w*.85),
+          hollow:p.random()>.78,label:Math.floor(p.random(3,12)),
+          vx:p.random(-.12,.12),vy:p.random(-.12,.12)
+        }));
+      }
+      p._sc.forEach(n=>{
+        n.x+=n.vx;n.y+=n.vy;
+        if(n.x<w*.08||n.x>w*.92)n.vx*=-1;
+        if(n.y<w*.08||n.y>w*.92)n.vy*=-1;
+      });
+      p._sc.forEach((n1,i)=>{
+        p._sc.forEach((n2,j)=>{
+          if(j<=i) return;
+          let d=Math.sqrt((n1.x-n2.x)**2+(n1.y-n2.y)**2);
+          if(d<w*.26){
+            let a=p.map(d,0,w*.26,70,5);
+            p.stroke(25,23,20,a);p.strokeWeight(.5);
+            p.drawingContext.setLineDash([3,5]);
+            p.line(n1.x,n1.y,n2.x,n2.y);
+            p.drawingContext.setLineDash([]);
+          }
+        });
+      });
+      p._sc.forEach(n=>{
+        if(n.hollow){
+          p.stroke(25,23,20,160);p.strokeWeight(1);p.noFill();p.circle(n.x,n.y,8);
+        } else {
+          p.noStroke();p.fill(25,23,20,200);p.circle(n.x,n.y,p.random(4,8));
+        }
+        p.noStroke();p.fill(25,23,20,90);p.textFont('monospace');p.textSize(w*.024);
+        p.text(n.label,n.x+6,n.y-4);
+      });
+    }
+  },
+
+  {
+    id:'radial-burst', name:'Radial Burst', cat:'data', register:'medium · energetic',
+    desc:'Lines radiating from a single origin, each terminating in a dot. Density and length variation creates depth. Used for data: each spoke = a value, connection, or relationship. Clean. Direct.',
+    ref:'Ref: white burst gifs, radial connection diagram, star chart radial forms',
+    cmd:'"radial burst"',
+    params:['origin: centre/offset','count: 20–120','dot-size: uniform/data','motion: static/rotate/pulse'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let cx=w*.5,cy=w*.54,t=p.frameCount*.007;
+      for(let i=0;i<88;i++){
+        let angle=(i/88)*p.TWO_PI+t*.12;
+        let len=p.map(p.noise(i*.09,t*.28),0,1,w*.06,w*.46);
+        let alpha=p.map(len,w*.06,w*.46,40,230);
+        let sw=p.map(len,w*.06,w*.46,.3,1.3);
+        p.stroke(...W,alpha);p.strokeWeight(sw);
+        let ex=cx+p.cos(angle)*len,ey=cy+p.sin(angle)*len;
+        p.line(cx,cy,ex,ey);
+        p.noStroke();p.fill(...W,alpha*1.9);
+        p.circle(ex,ey,p.map(len,w*.06,w*.46,1.5,5.5));
+      }
+      // origin glow
+      for(let r=14;r>0;r--){
+        p.noStroke();p.fill(...W,r*3.5);p.circle(cx,cy,r*2.2);
+      }
+    }
+  },
+
+  {
+    id:'data-waveform', name:'Data Waveform', cat:'data', register:'medium · rhythmic',
+    desc:'Data encoded as bar height — but the bars breathe. Each column pulses on its own cycle. The chart is alive. Statistics with a heartbeat. The most accessible ORG data format.',
+    ref:'Ref: waveform data viz, audio spectrum, dot matrix audio bars gif',
+    cmd:'"data waveform [dataset]"',
+    params:['bars: 8–64','animation: breathe/react/static','label: number/none'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      let bars=26,bw=w/bars,t=p.frameCount*.017;
+      for(let i=0;i<bars;i++){
+        let base=p.noise(i*.21)*.68+.14;
+        let anim=base+p.sin(t+i*.54)*.11;
+        anim=Math.max(.04,Math.min(1,anim));
+        let h=anim*w*.74;
+        let alpha=p.map(anim,0,1,60,245);
+        p.noStroke();p.fill(...W,alpha);
+        p.rect(i*bw+2,w*.85-h,bw-4,h);
+      }
+    }
+  },
+
+  {
+    id:'arc-clock', name:'Arc Clock / Time Data', cat:'data', register:'sparse · precise',
+    desc:'Time or cyclical data encoded as nested arcs growing from a baseline. The longer the arc, the greater the value. Elegant, minimal, and immediately readable as "time passing". Accent colour marks key nodes.',
+    ref:'Ref: xona.com arc clock gif, semicircle data viz, time-based arc charts',
+    cmd:'"arc clock [data]"',
+    params:['arcs: 3–12','colour: mono/accent-nodes','orientation: above/below/both'],
+    accent:'#e8ff00',
+    draw(p,w){
+      p.background(...B);
+      let cx=w*.5,cy=w*.62,t=p.frameCount*.008;
+      let arcs=[.85,.6,.42,.28,.18,.1];
+      arcs.forEach((v,i)=>{
+        let animated=v+p.sin(t+i*.5)*.04;
+        let radius=p.map(i,0,arcs.length-1,w*.42,w*.08);
+        let endAngle=-p.PI+animated*p.PI;
+        let alpha=p.map(i,0,arcs.length-1,220,60);
+        p.noFill();p.stroke(...W,alpha);p.strokeWeight(p.map(i,0,arcs.length-1,.6,1.4));
+        p.arc(cx,cy,radius*2,radius*2,-p.PI,endAngle);
+        // endpoint dot
+        let ex=cx+p.cos(endAngle)*radius;
+        let ey=cy+p.sin(endAngle)*radius;
+        if(i===0){
+          // accent yellow for primary arc
+          p.noStroke();p.fill(232,255,0,240);p.circle(ex,ey,7);
+          p.fill(232,255,0,60);p.circle(ex,ey,14);
+        } else {
+          p.noStroke();p.fill(...W,alpha);p.circle(ex,ey,3.5);
+        }
+      });
+      // baseline
+      p.stroke(...W,30);p.strokeWeight(.5);p.line(w*.08,cy,w*.92,cy);
+      // time label
+      p.noStroke();p.fill(...W,40);p.textFont('monospace');p.textSize(w*.022);
+      p.textAlign(p.LEFT,p.TOP);p.text('00:00:00',w*.08,cy+8);
+    }
+  },
+
+  // ── IMAGE ───────────────────────────────
+
+  {
+    id:'halftone-image', name:'Halftone from Image', cat:'image', register:'dense · figurative',
+    desc:'A photograph converted to a dot halftone — each dot sized by local brightness. The image becomes a system. Works on any source photo. The resulting dots can be circles, squares, or custom shapes.',
+    ref:'Ref: Wired Japan halftone portrait, dot-matrix face from photo, halftone figure',
+    cmd:'"halftone image [photo]"',
+    params:['dot: circle/square/cross','grid: regular/hex/random','invert: yes/no'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      // Simulate halftone from synthetic "image"
+      let cols=36,rows=36,cw=w/cols,t=p.frameCount*.004;
+      for(let x=0;x<cols;x++) for(let y=0;y<rows;y++){
+        // Create face-like brightness map
+        let nx=(x/cols-.5)*2,ny=(y/rows-.5)*2;
+        let faceShape=Math.max(0,1-Math.sqrt(nx*nx+ny*ny*1.3));
+        let features=1-p.map(p.noise(x*.22,y*.22),0,1,0,1)*faceShape*.4;
+        let brightness=faceShape*features;
+        let n=p.noise(x*.15,y*.15,t);
+        let sz=(brightness*.85+n*.15)*cw*.95;
+        p.noStroke();p.fill(...W,p.map(sz,0,cw,.0,255));
+        p.circle((x+.5)*cw,(y+.5)*cw,sz);
+      }
+    }
+  },
+
+  {
+    id:'displacement-map', name:'Displacement Map', cat:'image', register:'medium · fluid',
+    desc:'One image used to warp another. The brightness values of the displacement map push pixels horizontally or vertically. Creates the liquified face effect — recognisable but physically impossible.',
+    ref:'Ref: liquified face black/white, warp displacement portrait, fluid distortion gif',
+    cmd:'"displacement [image]"',
+    params:['amount: subtle/medium/extreme','axis: H/V/radial','source: noise/image'],
+    accent:null,
+    draw(p,w){
+      p.background(215,213,208);
+      let t=p.frameCount*.008;
+      p.noStroke();
+      // simulate displacement of a face outline
+      let cx=w/2,cy=w/2;
+      for(let y=0;y<w;y+=3){
+        for(let x=0;x<w;x+=3){
+          let nx=(x-cx)/w*2,ny=(y-cy)/w*2;
+          let inFace=Math.sqrt(nx*nx+ny*ny*1.4)<.7;
+          if(!inFace) continue;
+          let disp=p.noise(x*.01,y*.01,t)*w*.06-w*.03;
+          let disp2=p.noise(x*.01+100,y*.01,t)*w*.04-w*.02;
+          let brightness=p.map(p.noise(x*.02,y*.02),0,1,20,200);
+          let grain=(p.random()-.5)*25;
+          p.fill(brightness+grain,brightness*.97+grain,brightness*.94+grain,
+            p.map(Math.sqrt(nx*nx+ny*ny*1.4),0,.7,200,0));
+          p.rect(x+disp,y+disp2,3,3);
+        }
+      }
+    }
+  },
+
+  // ── SYSTEMS ─────────────────────────────
+
+  {
+    id:'golden-ratio', name:'Golden Ratio / Fibonacci', cat:'systems', register:'sparse · mathematical',
+    desc:'The construction lines of mathematical beauty — the spiral, the nested rectangles, the proportion system. Revealed slowly, built incrementally. The underlying order made visible.',
+    ref:'Ref: Fibonacci spiral construction gif, golden ratio overlay, mathematical beauty',
+    cmd:'"golden ratio"',
+    params:['show: spiral/grid/both','build: instant/animated','style: construction/clean'],
+    accent:null,
+    draw(p,w){
+      p.background(...B);
+      p.stroke(...W);p.noFill();
+      let t=p.frameCount*.006;
+      // Animated spiral build
+      let phi=1.6180339887;
+      let size=w*.82,cx=w*.55,cy=w*.48;
+      let progress=p.map(p.sin(t*.4),-1,1,.2,1);
+      // Rectangle subdivisions
+      let rects=[];
+      let x=cx-size*.5,y=cy-size*.5,rw=size,rh=size;
+      for(let i=0;i<7;i++){
+        let a=p.map(i,0,6,220,20)*progress;
+        p.stroke(...W,a);p.strokeWeight(p.map(i,0,6,.4,1.2));
+        p.rect(x,y,rw,rh);
+        rects.push({x,y,w:rw,h:rh});
+        let newW=rw/phi,newH=rh/phi;
+        x+=rw-newW;rw=newW;rh=newH;
+      }
+      // Spiral arc
+      p.noFill();p.stroke(...W,120*progress);p.strokeWeight(1);
+      p.beginShape();
+      let spiralPts=200*progress;
+      for(let i=0;i<=spiralPts;i++){
+        let angle=(i/200)*p.TWO_PI*2.5;
+        let r=5*Math.pow(phi,angle/(p.PI*.5));
+        let sx=w*.5+p.cos(angle+p.PI)*r*.8;
+        let sy=w*.5+p.sin(angle+p.PI)*r*.8;
+        p.vertex(sx,sy);
+      }
+      p.endShape();
+    }
+  },
+
+  {
+    id:'lissajous', name:'Lissajous / Orbital', cat:'systems', register:'sparse · mathematical',
+    desc:'Mathematical curves from two perpendicular oscillations. Figure-eights, orbital paths, infinity symbols. The hidden geometry of wave interference. Elegant, precise, endlessly variable.',
+    ref:'Ref: lissajous orbital loops on teal, green line mathematical forms',
+    cmd:'"lissajous [a:b ratio]"',
+    params:['ratio: 1:2/2:3/3:4','phase: 0/PI/animated','colour: mono/accent'],
+    accent:'#39ff14',
+    draw(p,w){
+      p.background(8,22,18);
+      p.noFill();p.strokeWeight(.8);
+      let t=p.frameCount*.008;
+      let cx=w/2,cy=w*.38,r=w*.3;
+      // Multiple lissajous
+      [[1,2,0],[2,3,p.PI/4],[3,4,p.PI/3]].forEach(([a,b,ph],idx)=>{
+        let alpha=p.map(idx,0,2,180,60);
+        p.stroke(100,220,80,alpha);
+        p.beginShape();
+        for(let i=0;i<=360;i++){
+          let angle=p.map(i,0,360,0,p.TWO_PI);
+          let x=cx+p.cos(a*angle+t*(idx+1)*.3+ph)*r*(1-idx*.18);
+          let y=cy+p.sin(b*angle+ph)*r*(1-idx*.18);
+          p.vertex(x,y);
+        }
+        p.endShape(p.CLOSE);
+      });
+      // vector field below
+      let gCols=10,gRows=5,gcw=w/gCols,gch=w*.38/gRows;
+      for(let x=0;x<gCols;x++) for(let y=0;y<gRows;y++){
+        let px=(x+.5)*gcw,py=w*.66+(y+.5)*gch;
+        let n=p.noise(x*.25,y*.25,t*.4);
+        let angle=n*p.TWO_PI*2;
+        let len=gcw*.35;
+        p.stroke(100,220,80,80);p.strokeWeight(.7);
+        p.line(px,py,px+p.cos(angle)*len,py+p.sin(angle)*len);
+      }
+    }
+  },
+
+  {
+    id:'network-graph', name:'Network Graph', cat:'systems', register:'medium · structural',
+    desc:'Nodes connected by edges, physically simulated. Each node attracts and repels. The structure self-organises. Used for relationships, connections, dependency maps. Blur trails make it feel alive.',
+    ref:'Ref: physics node graph, molecule structure gif, radial-network hybrid',
+    cmd:'"network graph"',
+    params:['nodes: 8–40','physics: rigid/elastic/loose','trails: none/blur/ghost'],
+    accent:null,
+    draw(p,w){
+      p.background(...B,28);
+      if(!p._ng){
+        p._ng={
+          nodes:Array.from({length:24},()=>({
+            x:p.random(w*.2,w*.8),y:p.random(w*.2,w*.8),
+            vx:p.random(-.5,.5),vy:p.random(-.5,.5),r:p.random(3,9)
+          })),
+          edges:[]
+        };
+        p._ng.nodes.forEach((_,i)=>{
+          let conns=Math.floor(p.random(1,4));
+          for(let c=0;c<conns;c++){
+            let j=Math.floor(p.random(p._ng.nodes.length));
+            if(j!==i) p._ng.edges.push([i,j]);
+          }
+        });
+      }
+      // physics
+      p._ng.nodes.forEach((a,i)=>{
+        p._ng.nodes.forEach((b,j)=>{
+          if(i>=j) return;
+          let dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+          let f=(d-85)/(d*9);
+          a.vx+=dx*f;a.vy+=dy*f;b.vx-=dx*f;b.vy-=dy*f;
+        });
+        a.x+=a.vx;a.y+=a.vy;a.vx*=.92;a.vy*=.92;
+        if(a.x<w*.05||a.x>w*.95)a.vx*=-1;
+        if(a.y<w*.05||a.y>w*.95)a.vy*=-1;
+      });
+      // edges
+      p._ng.edges.forEach(([i,j])=>{
+        let a=p._ng.nodes[i],b=p._ng.nodes[j];
+        let d=Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);
+        let alpha=p.map(d,0,w,90,5);
+        p.stroke(...W,alpha);p.strokeWeight(.5);p.line(a.x,a.y,b.x,b.y);
+      });
+      // nodes — bright white with glow
+      p._ng.nodes.forEach(n=>{
+        p.noStroke();
+        p.fill(...W,220);p.circle(n.x,n.y,n.r*2);
+        p.fill(...W,30);p.circle(n.x,n.y,n.r*6);
+      });
+    }
+  }
+
+];
+
+// ─── COMBINATIONS ───────────────────────────
+const COMBOS = [
+  {num:'01',name:'The Joy Division',els:['Flow Lines','Data Waveform'],
+   desc:'Rows of lines whose amplitude is driven by actual data. Any dataset becomes a mountain range. The most direct ORG data format.',
+   eg:'"flow lines, 28 rows, amplitude from data, white on black"'},
+  {num:'02',name:'The Portrait',els:['Dot Matrix','Pixel Sort'],
+   desc:'A face in dots, then a second pass of pixel sorting — the form assembles then dissolves. Same subject, two systems.',
+   eg:'"dot matrix portrait, then pixel sort vertical, slow"'},
+  {num:'03',name:'The Data Story',els:['Data Typography','Star Chart'],
+   desc:'The stat dominates the frame. The star chart provides context. One number that stops the scroll.',
+   eg:'"15 at display scale, star chart annotation, white on black"'},
+  {num:'04',name:'The Cosmos',els:['Particle Cloud','Flowing Trails'],
+   desc:'Dense particle field with trails suggesting motion through it. Deep space, data flowing, biological forms.',
+   eg:'"particle cloud ring, 800pts, trailing, slow noise field"'},
+  {num:'05',name:'The Word',els:['Word Shape','Kinetic Type'],
+   desc:'The word is its own illustration. ORG in a circle. WAVES in a wave. Concept and form become identical.',
+   eg:'"word shape: ORG filling O, size gradient toward centre"'},
+  {num:'06',name:'The Breakdown',els:['Glitch Slice','Echo Type'],
+   desc:'A bold letterform, stacked echo layers, then glitch displacement. High contrast. Unsettling. Use for data about attention, noise, overload.',
+   eg:'"echo type G, 20 layers, glitch slice intense, slow pulse"'},
+  {num:'07',name:'The Poster',els:['Gradient Lines','Data Typography'],
+   desc:'Vertical gradient columns behind a single bold stat. Swiss poster logic. Print-ready ORG. One accent colour maximum.',
+   eg:'"gradient columns bg, data stat overlay, acid yellow accent"'},
+  {num:'08',name:'The System',els:['Golden Ratio','Network Graph'],
+   desc:'Mathematical beauty as the skeleton, network as the flesh. The underlying order and the emergent connections.',
+   eg:'"golden ratio construction, network overlay, sparse, slow build"'},
+  {num:'09',name:'The Scan',els:['Pixel Sort Portrait','Contour Field'],
+   desc:'A pixel-sorted photograph with contour lines running through it — the face is both present and dissolving into topography.',
+   eg:'"pixel sort vertical, contour overlay, greyscale, slow"'},
+  {num:'10',name:'The Signal',els:['Oscilloscope','ASCII Texture'],
+   desc:'Wave rows in the foreground, ASCII texture field behind. Analogue signal meets digital character map.',
+   eg:'"oscilloscope 22 rows, ASCII bg, monospace, white on black"'}
+];
+
+// ─── COLOURS ────────────────────────────────
+const COLOURS = [
+  {name:'Off-white',hex:'#eeeae2',role:'Signal · Primary mark',always:true},
+  {name:'Black',hex:'#080808',role:'Foundation · Background',always:true},
+  {name:'Light grey',hex:'#d7d5d0',role:'Editorial bg · Star chart',always:true},
+  {name:'Acid yellow',hex:'#e8ff00',role:'Accent · Peak values',always:false},
+  {name:'Signal red',hex:'#ff3020',role:'Accent · Alert · Data',always:false},
+  {name:'Electric blue',hex:'#1a1aff',role:'Accent · Particle bg',always:false},
+  {name:'Glitch teal',hex:'#00e5cc',role:'Accent · Glitch colour',always:false},
+  {name:'ORG green',hex:'#39ff14',role:'Accent · Systems',always:false},
+];
+
+// ─── RENDER CARDS ───────────────────────────
+const grid = document.getElementById('grid');
+const paused = {};
+
+GLOSSARY.forEach(item => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.cat = item.cat;
+  card.innerHTML = `
+    <div class="canvas-wrap" id="wrap-${item.id}">
+      <div class="pause-pill">click to pause</div>
+    </div>
+    <div class="card-body">
+      <div class="card-meta">
+        <span class="card-cat">${item.cat}</span>
+        <span class="card-register">${item.register}</span>
+      </div>
+      <div class="card-name">${item.name}${item.accent?`<span class="card-accent" style="background:${item.accent}"></span>`:''}</div>
+      <div class="card-desc">${item.desc}</div>
+      <div class="card-ref"><span>→ </span>${item.ref}</div>
+      <div class="cmd"><div class="cmd-label">Say to Claude:</div><div class="cmd-text"><strong>${item.cmd}</strong></div></div>
+      <div class="params">${item.params.map(p=>`<span class="param">${p}</span>`).join('')}</div>
+    </div>`;
+  grid.appendChild(card);
+  paused[item.id] = false;
+
+  const wrap = document.getElementById(`wrap-${item.id}`);
+  new p5(p => {
+    p.setup = () => {
+      const sz = wrap.offsetWidth;
+      p.createCanvas(sz, sz).parent(wrap);
+      p.frameRate(28);
+    };
+    p.draw = () => { if(!paused[item.id]) item.draw(p, p.width); };
+  });
+
+  card.addEventListener('click', () => {
+    paused[item.id] = !paused[item.id];
+    const pill = card.querySelector('.pause-pill');
+    pill.textContent = paused[item.id] ? 'paused — click to resume' : 'click to pause';
+  });
+});
+
+// ─── RENDER COMBOS ──────────────────────────
+const cg = document.getElementById('combos-grid');
+COMBOS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'combo';
+  el.innerHTML = `
+    <div class="combo-num">${c.num}</div>
+    <div class="combo-name">${c.name}</div>
+    <div class="combo-formula">${c.els.map((e,i)=>`<span class="combo-el">${e}</span>${i<c.els.length-1?'<span class="combo-plus">+</span>':''}`).join('')}</div>
+    <div class="combo-desc">${c.desc}</div>
+    <div class="combo-eg"><strong>Try:</strong> ${c.eg}</div>`;
+  cg.appendChild(el);
+});
+
+// ─── RENDER COLOURS ─────────────────────────
+const colGrid = document.getElementById('colour-grid');
+COLOURS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'colour-card';
+  el.innerHTML = `
+    <div class="colour-swatch" style="background:${c.hex};${c.name==='Off-white'?'border:1px solid #222':''}"></div>
+    <div class="colour-name" style="${!c.always?'opacity:0.45':''}">${c.name}</div>
+    <div class="colour-role" style="${!c.always?'opacity:0.35':''}">${c.role}${!c.always?' · Rare':'· Always'}</div>`;
+  colGrid.appendChild(el);
+});
+
+// ─── FILTER ─────────────────────────────────
+const countEl = document.getElementById('entry-count');
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    let n = 0;
+    document.querySelectorAll('.card').forEach(card => {
+      const show = f === 'all' || card.dataset.cat === f;
+      card.classList.toggle('hidden', !show);
+      if(show) n++;
+    });
+    countEl.textContent = `${n} entries`;
+  });
+});
+
+</script>
+</body>
+</html>
