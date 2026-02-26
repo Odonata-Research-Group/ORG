@@ -283,13 +283,7 @@ async function generate() {
   setProgress(50); setStatus('Triangulating ' + pts.length + ' points...'); await tick();
 
   // Delaunator expects a flat [x0,y0,x1,y1,...] array
-  const coords = new Float64Array(pts.length * 2);
-  for (let i = 0; i < pts.length; i++) {
-    coords[i*2]   = pts[i][0];
-    coords[i*2+1] = pts[i][1];
-  }
-
-  const d = Delaunator.from(coords);
+  const d = Delaunator.from(pts);
   const triCount = d.triangles.length / 3;
 
   setProgress(75); setStatus('Rendering ' + triCount + ' triangles...'); await tick();
@@ -304,9 +298,9 @@ async function generate() {
     const bi = d.triangles[i+1];
     const ci = d.triangles[i+2];
 
-    const ax = coords[ai*2], ay = coords[ai*2+1];
-    const bx = coords[bi*2], by = coords[bi*2+1];
-    const cx = coords[ci*2], cy = coords[ci*2+1];
+    const ax = pts[ai][0], ay = pts[ai][1];
+    const bx = pts[bi][0], by = pts[bi][1];
+    const cx = pts[ci][0], cy = pts[ci][1];
 
     const mx = (ax+bx+cx)/3;
     const my = (ay+by+cy)/3;
