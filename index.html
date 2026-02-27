@@ -385,6 +385,30 @@
 
 <!-- Generative placeholder thumbnails -->
 <script>
+// ── IMAGE CONFIG — edit this to swap thumbnails ──────────────────────────────
+// Add the filename here when you have a real image for a card.
+// Leave blank ('') to show the generative placeholder instead.
+const THUMBS = {
+  '001': '',               // e.g. 'thumb-001.png'
+  '002': 'thumb-002.png',
+  '003': 'thumb-003.png',
+  '004': '',
+  '005': '',
+};
+
+// Auto-inject images where filenames are set
+Object.entries(THUMBS).forEach(([id, file]) => {
+  if (!file) return;
+  const container = document.getElementById('thumb-0' + id.slice(-2));
+  if (!container) return;
+  const img = document.createElement('img');
+  img.src = file;
+  img.alt = '';
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+  container.style.position = 'relative';
+  container.appendChild(img);
+});
+
 // Draw a unique generative preview into each card thumbnail
 // These will be replaced by real screenshots later
 
