@@ -543,14 +543,22 @@ btnRecord.addEventListener('click', () => {
   btnRecord.style.borderColor = '#ff3020';
 
   const DURATION = 3000;  // ms
-  const FPS      = 20;
+  const FPS      = 12;    // lower = faster encoding
   const INTERVAL = 1000 / FPS;
+  // Capture at reduced resolution for speed
+  const GIF_W    = 480;
+  const GIF_H    = Math.round(canvas.height * (GIF_W / canvas.width));
   const frames   = [];
-  const start    = performance.now();
 
-  // Capture frames at FPS interval
+  // Offscreen canvas for downsampling
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width  = GIF_W;
+  sampleCanvas.height = GIF_H;
+  const sctx = sampleCanvas.getContext('2d');
+
   const captureId = setInterval(() => {
-    frames.push(canvas.toDataURL('image/png'));
+    sctx.drawImage(canvas, 0, 0, GIF_W, GIF_H);
+    frames.push(sctx.getImageData(0, 0, GIF_W, GIF_H));
   }, INTERVAL);
 
   setTimeout(() => {
@@ -559,62 +567,37 @@ btnRecord.addEventListener('click', () => {
     btnRecord.style.color = '#ffdd00';
     btnRecord.style.borderColor = '#ffdd00';
 
-    // Encode async to avoid blocking UI
+    // Encode on next tick so UI updates first
     setTimeout(() => {
       const gif = new GIFBuilder({
-        width:  canvas.width,
-        height: canvas.height,
-        delay:  Math.round(INTERVAL / 10), // GIF delay in 1/100s units
+        width:  GIF_W,
+        height: GIF_H,
+        delay:  Math.round(INTERVAL / 10),
       });
 
-      // Load each frame image and add to GIF
-      let loaded = 0;
-      const imgs = frames.map(src => {
-        const img = new Image();
-        img.src = src;
-        return img;
+      const off = document.createElement('canvas');
+      off.width  = GIF_W;
+      off.height = GIF_H;
+      const octx = off.getContext('2d');
+
+      frames.forEach(imgData => {
+        octx.putImageData(imgData, 0, 0);
+        gif.addFrame(octx);
       });
 
-      function addFrames() {
-        const off = document.createElement('canvas');
-        off.width  = canvas.width;
-        off.height = canvas.height;
-        const octx = off.getContext('2d');
+      const blob = gif.encode();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.download = 'ORG-keyboard.gif';
+      a.href     = url;
+      a.click();
+      URL.revokeObjectURL(url);
 
-        imgs.forEach(img => {
-          octx.clearRect(0, 0, off.width, off.height);
-          octx.drawImage(img, 0, 0);
-          gif.addFrame(octx);
-        });
-
-        const blob = gif.encode();
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.download = 'ORG-keyboard.gif';
-        a.href     = url;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        recording = false;
-        btnRecord.textContent  = '⏺ Record 3s';
-        btnRecord.style.color  = '#555';
-        btnRecord.style.borderColor = '#555';
-      }
-
-      // Wait for all images to load
-      let loadedCount = 0;
-      imgs.forEach(img => {
-        if (img.complete) {
-          loadedCount++;
-          if (loadedCount === imgs.length) addFrames();
-        } else {
-          img.onload = () => {
-            loadedCount++;
-            if (loadedCount === imgs.length) addFrames();
-          };
-        }
-      });
-    }, 50);
+      recording = false;
+      btnRecord.textContent = '⏺ Record 3s';
+      btnRecord.style.color = '#555';
+      btnRecord.style.borderColor = '#555';
+    }, 80);
   }, DURATION);
 });
 </script>
