@@ -52,7 +52,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 48px 56px;
+    padding: 24px 56px 48px;
   }
 
   /* ── TOP ── */
@@ -62,31 +62,7 @@
     align-items: flex-start;
   }
 
-  .logo-img {
-    width: auto;
-    height: 52px;
-    mix-blend-mode: screen;
-    opacity: 0.92;
-    display: block;
-  }
-
-  .top-right {
-    text-align: right;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--white);
-    line-height: 2.6;
-  }
-
-  .top-right a {
-    color: var(--white);
-    text-decoration: none;
-    display: block;
-    transition: opacity 0.2s;
-  }
-
-  .top-right a:hover { opacity: 0.5; }
+  /* nav.js handles header styles */
 
   /* ── MIDDLE ── */
   .middle {
@@ -229,15 +205,6 @@
 
 <div class="content">
 
-  <div class="top">
-    <img class="logo-img" src="ORG.png" alt="ORG">
-    <div class="top-right">
-      <a href="https://instagram.com/odonataresearchgroup" target="_blank">Instagram</a>
-      <a href="https://github.com/odonata-research-group/org" target="_blank">GitHub</a>
-
-    </div>
-  </div>
-
   <div class="middle">
     <div class="org-full">Odonata Research Group</div>
     <div class="tagline">
@@ -340,5 +307,6 @@ new p5(function(p) {
 });
 </script>
 
+<script src="nav.js"></script>
 </body>
 </html>
