@@ -598,6 +598,24 @@ function applyGlitch(ctx, W, H, srcData, seed) {
   }
 }
 
+// ── GIF Worker URL ───────────────────────────────────────────────────────────
+// Fetches gif.worker.js from same origin and wraps in blob to avoid CORS
+let _workerBlobUrl = null;
+function getWorkerUrl() {
+  if (_workerBlobUrl) return _workerBlobUrl;
+  // We'll use a synchronous XHR to get the worker from same origin
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'gif.worker.js', false); // sync
+    xhr.send();
+    const blob = new Blob([xhr.responseText], { type: 'application/javascript' });
+    _workerBlobUrl = URL.createObjectURL(blob);
+    return _workerBlobUrl;
+  } catch(e) {
+    return 'gif.worker.js';
+  }
+}
+
 // ── Export PNG ────────────────────────────────────────────────────────────────
 document.getElementById('btn-png').addEventListener('click', () => {
   const a = document.createElement('a');
@@ -625,7 +643,7 @@ document.getElementById('btn-gif').addEventListener('click', async () => {
     quality: 8,
     width: W,
     height: H,
-    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+    workerScript: getWorkerUrl()
   });
 
   const frameCanvas = document.createElement('canvas');
@@ -651,6 +669,14 @@ document.getElementById('btn-gif').addEventListener('click', async () => {
     btn.textContent = '↓ GIF';
     btn.disabled = false;
     setStatus('Done');
+    setProgress(0, false);
+  });
+
+  gif.on('error', err => {
+    console.error('GIF error:', err);
+    btn.textContent = '↓ GIF';
+    btn.disabled = false;
+    setStatus('GIF failed — try PNG');
     setProgress(0, false);
   });
 
