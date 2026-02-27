@@ -212,9 +212,12 @@
       <div class="swatch" data-color="#00aaff" style="background:#00aaff"></div>
       <div class="swatch" data-color="rainbow" style="background: conic-gradient(red,yellow,green,blue,red)"></div>
     </div>
+    <div style="padding-left:24px;border-left:1px solid #1a1a1a;margin-left:8px">
+    <button class="mode-btn" id="btn-record" style="border-color:#555;color:#555;min-width:120px">⏺ Record 3s</button>
   </div>
 </div>
 
+<script src="make-gif.js"></script>
 <script src="nav.js"></script>
 <script>
 // ── Key → note mapping ────────────────────────────────────────────────────────
@@ -526,6 +529,93 @@ document.querySelectorAll('.swatch').forEach(s => {
     s.classList.add('active');
     colorMode = s.dataset.color;
   });
+});
+
+// ── GIF Recording ─────────────────────────────────────────────────────────────
+const btnRecord = document.getElementById('btn-record');
+let recording   = false;
+
+btnRecord.addEventListener('click', () => {
+  if (recording) return;
+  recording = true;
+  btnRecord.textContent = '● Recording...';
+  btnRecord.style.color = '#ff3020';
+  btnRecord.style.borderColor = '#ff3020';
+
+  const DURATION = 3000;  // ms
+  const FPS      = 20;
+  const INTERVAL = 1000 / FPS;
+  const frames   = [];
+  const start    = performance.now();
+
+  // Capture frames at FPS interval
+  const captureId = setInterval(() => {
+    frames.push(canvas.toDataURL('image/png'));
+  }, INTERVAL);
+
+  setTimeout(() => {
+    clearInterval(captureId);
+    btnRecord.textContent = '⏳ Encoding...';
+    btnRecord.style.color = '#ffdd00';
+    btnRecord.style.borderColor = '#ffdd00';
+
+    // Encode async to avoid blocking UI
+    setTimeout(() => {
+      const gif = new GIFBuilder({
+        width:  canvas.width,
+        height: canvas.height,
+        delay:  Math.round(INTERVAL / 10), // GIF delay in 1/100s units
+      });
+
+      // Load each frame image and add to GIF
+      let loaded = 0;
+      const imgs = frames.map(src => {
+        const img = new Image();
+        img.src = src;
+        return img;
+      });
+
+      function addFrames() {
+        const off = document.createElement('canvas');
+        off.width  = canvas.width;
+        off.height = canvas.height;
+        const octx = off.getContext('2d');
+
+        imgs.forEach(img => {
+          octx.clearRect(0, 0, off.width, off.height);
+          octx.drawImage(img, 0, 0);
+          gif.addFrame(octx);
+        });
+
+        const blob = gif.encode();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.download = 'ORG-keyboard.gif';
+        a.href     = url;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        recording = false;
+        btnRecord.textContent  = '⏺ Record 3s';
+        btnRecord.style.color  = '#555';
+        btnRecord.style.borderColor = '#555';
+      }
+
+      // Wait for all images to load
+      let loadedCount = 0;
+      imgs.forEach(img => {
+        if (img.complete) {
+          loadedCount++;
+          if (loadedCount === imgs.length) addFrames();
+        } else {
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === imgs.length) addFrames();
+          };
+        }
+      });
+    }, 50);
+  }, DURATION);
 });
 </script>
 </body>
