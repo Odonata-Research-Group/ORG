@@ -390,7 +390,7 @@
 // Add the filename here when you have a real image for a card.
 // Leave blank ('') to show the generative placeholder instead.
 const THUMBS = {
-  '001': '',               // e.g. 'thumb-001.png'
+  '001': '',
   '002': 'thumb-002.png',
   '003': 'thumb-003.png',
   '004': 'thumb-004.png',
@@ -401,7 +401,7 @@ const THUMBS = {
 // Auto-inject images where filenames are set
 Object.entries(THUMBS).forEach(([id, file]) => {
   if (!file) return;
-  const container = document.getElementById('thumb-0' + id.slice(-2));
+  const container = document.getElementById('thumb-' + id);
   if (!container) return;
   const img = document.createElement('img');
   img.src = file;
