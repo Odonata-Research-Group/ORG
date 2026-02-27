@@ -343,8 +343,7 @@
   </div>
 </div>
 
-<!-- gif.js for animated GIF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script src="make-gif.js"></script>
 <script src="nav.js"></script>
 <script>
 let srcImage = null;
@@ -598,24 +597,6 @@ function applyGlitch(ctx, W, H, srcData, seed) {
   }
 }
 
-// ── GIF Worker URL ───────────────────────────────────────────────────────────
-// Fetches gif.worker.js from same origin and wraps in blob to avoid CORS
-let _workerBlobUrl = null;
-function getWorkerUrl() {
-  if (_workerBlobUrl) return _workerBlobUrl;
-  // We'll use a synchronous XHR to get the worker from same origin
-  try {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'gif.worker.js', false); // sync
-    xhr.send();
-    const blob = new Blob([xhr.responseText], { type: 'application/javascript' });
-    _workerBlobUrl = URL.createObjectURL(blob);
-    return _workerBlobUrl;
-  } catch(e) {
-    return 'gif.worker.js';
-  }
-}
-
 // ── Export PNG ────────────────────────────────────────────────────────────────
 document.getElementById('btn-png').addEventListener('click', () => {
   const a = document.createElement('a');
@@ -630,57 +611,56 @@ document.getElementById('btn-gif').addEventListener('click', async () => {
   const btn = document.getElementById('btn-gif');
   btn.textContent = 'Encoding...';
   btn.disabled = true;
-  setStatus('Building 12 frames...');
   setProgress(0, true);
-  await tick();
 
   const W = lastImageData.width;
   const H = lastImageData.height;
   const FRAMES = 12;
 
-  const gif = new GIF({
-    workers: 2,
-    quality: 8,
-    width: W,
-    height: H,
-    workerScript: getWorkerUrl()
-  });
-
+  const builder = new GIFBuilder();
   const frameCanvas = document.createElement('canvas');
   frameCanvas.width = W; frameCanvas.height = H;
-  const fCtx = frameCanvas.getContext('2d');
+  const fCtx = frameCanvas.getContext('2d', { willReadFrequently: true });
 
+  // Build frames across animation frames so UI stays responsive
   for (let f = 0; f < FRAMES; f++) {
+    setStatus('Frame ' + (f + 1) + ' / ' + FRAMES + '...');
     fCtx.clearRect(0, 0, W, H);
-    applyGlitch(fCtx, W, H, lastImageData, f * 12345);
-    gif.addFrame(fCtx, { copy: true, delay: 80 });
-    setProgress((f / FRAMES) * 70);
+    applyGlitch(fCtx, W, H, lastImageData, f * 13337 + 7);
+    const id = fCtx.getImageData(0, 0, W, H);
+    builder.addFrame(id, 100);
+    setProgress((f + 1) / FRAMES * 60);
     await tick();
   }
 
-  gif.on('progress', p => setProgress(70 + p * 30));
-  gif.on('finished', blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.download = 'ORG-glitch.gif';
-    a.href = url;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    btn.textContent = '↓ GIF';
-    btn.disabled = false;
-    setStatus('Done');
-    setProgress(0, false);
-  });
+  setStatus('Encoding GIF...');
+  await tick();
 
-  gif.on('error', err => {
-    console.error('GIF error:', err);
+  // Encode (synchronous but fast for small images)
+  let gifBytes;
+  try {
+    gifBytes = builder.encode(p => setProgress(60 + p * 40));
+  } catch(e) {
+    console.error('GIF encode error:', e);
     btn.textContent = '↓ GIF';
     btn.disabled = false;
     setStatus('GIF failed — try PNG');
     setProgress(0, false);
-  });
+    return;
+  }
 
-  gif.render();
+  const blob = new Blob([gifBytes], { type: 'image/gif' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.download = 'ORG-glitch.gif';
+  a.href = url;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+  btn.textContent = '↓ GIF';
+  btn.disabled = false;
+  setStatus('Done — ' + FRAMES + ' frames');
+  setProgress(0, false);
 });
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
