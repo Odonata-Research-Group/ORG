@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — ASCII Art Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    flex: 1;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── CANVAS AREA ─────────────────────────── */
+  .canvas-area {
+    border-right: 1px solid var(--dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    background: var(--black);
+  }
+
+  .canvas-area.bg-white { background: #f5f5f0; }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 28px; color: var(--mid); }
+  .empty-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    line-height: 2;
+  }
+
+  /* Drop zone overlay */
+  .drop-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8,8,8,0.85);
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .drop-overlay.active { opacity: 1; pointer-events: all; }
+  .drop-overlay-text {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  #ascii-canvas {
+    max-width: 100%;
+    max-height: calc(100vh - 64px);
+    display: none;
+    image-rendering: pixelated;
+  }
+
+  /* ── CONTROLS ────────────────────────────── */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 64px);
+  }
+
+  .controls-inner {
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .controls-title {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--bright);
+    margin-bottom: 28px;
+  }
+
+  .control-group {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--dim);
+  }
+
+  .control-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .control-value {
+    font-size: 9px;
+    color: var(--bright);
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1px dashed var(--mid);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--bright);
+    line-height: 2;
+  }
+  .upload-zone:hover { border-color: var(--white); color: var(--white); }
+  .upload-zone.has-image { border-style: solid; border-color: var(--mid); color: var(--white); }
+
+  /* Range slider */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--mid);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 9px; height: 9px;
+    background: var(--white);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.5); }
+
+  /* Segment control (mode switcher) */
+  .seg-control {
+    display: flex;
+    gap: 2px;
+  }
+  .seg-btn {
+    flex: 1;
+    background: var(--dim);
+    border: none;
+    color: var(--bright);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    text-align: center;
+  }
+  .seg-btn.active {
+    background: var(--white);
+    color: var(--black);
+  }
+
+  /* Toggle */
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+  .toggle-name { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--white); }
+  .toggle-switch { width: 28px; height: 14px; background: var(--mid); border-radius: 7px; position: relative; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+  .toggle-switch.on { background: var(--white); }
+  .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; background: var(--black); border-radius: 50%; transition: transform 0.15s; }
+  .toggle-switch.on::after { transform: translateX(14px); }
+
+  /* Colour picker row */
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  input[type="color"] {
+    -webkit-appearance: none;
+    width: 28px; height: 28px;
+    border: 1px solid var(--mid);
+    border-radius: 50%;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    overflow: hidden;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+  .color-hex {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--bright);
+  }
+
+  /* Char set swatches */
+  .charset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .charset-btn {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    padding: 5px 8px;
+    border: 1px solid var(--mid);
+    background: none;
+    color: var(--bright);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: all 0.12s;
+  }
+  .charset-btn:hover { border-color: var(--white); color: var(--white); }
+  .charset-btn.active { background: var(--white); color: var(--black); border-color: var(--white); }
+
+  /* Actions */
+  .actions {
+    margin-top: auto;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-primary:disabled { opacity: 0.15; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--white);
+    border: 1px solid var(--mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    display: none;
+  }
+  .btn-secondary:hover { border-color: var(--white); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT -->
+  <div class="canvas-area" id="canvas-area">
+    <div class="drop-overlay" id="drop-overlay">
+      <div class="drop-overlay-text">Drop image</div>
+    </div>
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">⬛</div>
+      <div class="empty-label">Upload an image<br>or use generative mode</div>
+    </div>
+    <canvas id="ascii-canvas"></canvas>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="controls">
+    <div class="controls-inner">
+      <div class="controls-title">ASCII Generator</div>
+
+      <!-- Mode -->
+      <div class="control-group">
+        <span class="control-label">Mode</span>
+        <div class="seg-control">
+          <button class="seg-btn active" data-mode="image">Image</button>
+          <button class="seg-btn" data-mode="generative">Generative</button>
+        </div>
+      </div>
+
+      <!-- Upload (image mode) -->
+      <div class="control-group" id="upload-group">
+        <span class="control-label">Image</span>
+        <div class="upload-zone" id="upload-zone">
+          Drop image here<br>or click to upload
+          <input type="file" id="file-input" accept="image/*" style="display:none">
+        </div>
+      </div>
+
+      <!-- Generative pattern (generative mode) -->
+      <div class="control-group" id="gen-group" style="display:none">
+        <span class="control-label">Pattern</span>
+        <div class="charset-row" id="pattern-btns">
+          <button class="charset-btn active" data-pattern="sine">Sine</button>
+          <button class="charset-btn" data-pattern="radial">Radial</button>
+          <button class="charset-btn" data-pattern="noise">Noise</button>
+          <button class="charset-btn" data-pattern="grid">Grid</button>
+        </div>
+      </div>
+
+      <!-- Character set -->
+      <div class="control-group">
+        <span class="control-label">Characters</span>
+        <div class="charset-row" id="charset-btns">
+          <button class="charset-btn active" data-charset="standard">Standard</button>
+          <button class="charset-btn" data-charset="dense">Dense</button>
+          <button class="charset-btn" data-charset="minimal">Minimal</button>
+          <button class="charset-btn" data-charset="symbols">Symbols</button>
+          <button class="charset-btn" data-charset="binary">0 1</button>
+        </div>
+      </div>
+
+      <!-- Density -->
+      <div class="control-group">
+        <div class="control-row">
+          <span class="control-label" style="margin:0">Density</span>
+          <span class="control-value" id="val-density">80</span>
+        </div>
+        <input type="range" id="sl-density" min="20" max="160" value="80">
+      </div>
+
+      <!-- Contrast -->
+      <div class="control-group" id="contrast-group">
+        <div class="control-row">
+          <span class="control-label" style="margin:0">Contrast</span>
+          <span class="control-value" id="val-contrast">1.4</span>
+        </div>
+        <input type="range" id="sl-contrast" min="0.5" max="3" step="0.1" value="1.4">
+      </div>
+
+      <!-- Invert -->
+      <div class="control-group" id="invert-group">
+        <div class="toggle-row">
+          <span class="toggle-name">Invert</span>
+          <div class="toggle-switch" id="tog-invert"></div>
+        </div>
+      </div>
+
+      <!-- Background -->
+      <div class="control-group">
+        <div class="toggle-row">
+          <span class="toggle-name">White background</span>
+          <div class="toggle-switch" id="tog-bg"></div>
+        </div>
+      </div>
+
+      <!-- Colour mode -->
+      <div class="control-group">
+        <div class="toggle-row" style="margin-bottom:10px">
+          <span class="toggle-name">Colour mode</span>
+          <div class="toggle-switch" id="tog-color"></div>
+        </div>
+        <div class="color-row" id="color-row" style="opacity:0.25;pointer-events:none">
+          <input type="color" id="color-picker" value="#ff3020">
+          <span class="color-hex" id="color-hex">#ff3020</span>
+          <div style="flex:1"></div>
+          <span class="control-value" id="val-intensity">0.8</span>
+        </div>
+        <input type="range" id="sl-intensity" min="0.1" max="1" step="0.05" value="0.8"
+               style="margin-top:10px;opacity:0.25;pointer-events:none" id="sl-intensity-wrap">
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="btn-generate">Generate</button>
+        <button class="btn-secondary" id="btn-download">↓ Download PNG</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="nav.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let mode        = 'image';
+let uploadedImg = null;
+let charSet     = 'standard';
+let pattern     = 'sine';
+let invertMode  = false;
+let whiteBg     = false;
+let colorMode   = false;
+let colorHex    = '#ff3020';
+let hasResult   = false;
+
+const CHARSETS = {
+  standard: ' .,:;i1tfLCG08@#',
+  dense:    ' .-:=+*#%@█▓▒░',
+  minimal:  ' .:oO0@',
+  symbols:  ' .,;:!?|/\\()[]{}$%&*#@',
+  binary:   ' 01',
+};
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const canvas      = document.getElementById('ascii-canvas');
+const canvasArea  = document.getElementById('canvas-area');
+const emptyState  = document.getElementById('empty-state');
+const btnGenerate = document.getElementById('btn-generate');
+const btnDownload = document.getElementById('btn-download');
+const fileInput   = document.getElementById('file-input');
+
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.seg-btn[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.seg-btn[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    document.getElementById('upload-group').style.display   = mode === 'image'       ? '' : 'none';
+    document.getElementById('gen-group').style.display      = mode === 'generative'  ? '' : 'none';
+    document.getElementById('contrast-group').style.display = mode === 'image'       ? '' : 'none';
+    document.getElementById('invert-group').style.display   = mode === 'image'       ? '' : 'none';
+    if (mode === 'generative') autoGenerate();
+  });
+});
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadImage(e.target.files[0]);
+});
+
+// Drag & drop on canvas area
+canvasArea.addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('drop-overlay').classList.add('active');
+});
+canvasArea.addEventListener('dragleave', () => {
+  document.getElementById('drop-overlay').classList.remove('active');
+});
+canvasArea.addEventListener('drop', e => {
+  e.preventDefault();
+  document.getElementById('drop-overlay').classList.remove('active');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadImage(file);
+});
+
+function loadImage(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      uploadedImg = img;
+      uploadZone.textContent = '✓ ' + file.name;
+      uploadZone.classList.add('has-image');
+      autoGenerate();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Char set ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.charset-btn[data-charset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.charset-btn[data-charset]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    charSet = btn.dataset.charset;
+    autoGenerate();
+  });
+});
+
+// ── Pattern ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('.charset-btn[data-pattern]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.charset-btn[data-pattern]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pattern = btn.dataset.pattern;
+    autoGenerate();
+  });
+});
+
+// ── Sliders ───────────────────────────────────────────────────────────────────
+document.getElementById('sl-density').addEventListener('input', function() {
+  document.getElementById('val-density').textContent = this.value;
+  autoGenerate();
+});
+document.getElementById('sl-contrast').addEventListener('input', function() {
+  document.getElementById('val-contrast').textContent = parseFloat(this.value).toFixed(1);
+  autoGenerate();
+});
+document.getElementById('sl-intensity').addEventListener('input', function() {
+  document.getElementById('val-intensity').textContent = parseFloat(this.value).toFixed(2);
+  autoGenerate();
+});
+
+// ── Toggles ───────────────────────────────────────────────────────────────────
+document.getElementById('tog-invert').addEventListener('click', function() {
+  invertMode = !invertMode;
+  this.classList.toggle('on', invertMode);
+  autoGenerate();
+});
+
+document.getElementById('tog-bg').addEventListener('click', function() {
+  whiteBg = !whiteBg;
+  this.classList.toggle('on', whiteBg);
+  canvasArea.classList.toggle('bg-white', whiteBg);
+  autoGenerate();
+});
+
+document.getElementById('tog-color').addEventListener('click', function() {
+  colorMode = !colorMode;
+  this.classList.toggle('on', colorMode);
+  const colorRow = document.getElementById('color-row');
+  const slIntensity = document.getElementById('sl-intensity');
+  colorRow.style.opacity = colorMode ? '1' : '0.25';
+  colorRow.style.pointerEvents = colorMode ? 'all' : 'none';
+  slIntensity.style.opacity = colorMode ? '1' : '0.25';
+  slIntensity.style.pointerEvents = colorMode ? 'all' : 'none';
+  autoGenerate();
+});
+
+document.getElementById('color-picker').addEventListener('input', function() {
+  colorHex = this.value;
+  document.getElementById('color-hex').textContent = colorHex;
+  autoGenerate();
+});
+
+// ── Generate button ───────────────────────────────────────────────────────────
+btnGenerate.addEventListener('click', generate);
+function autoGenerate() { generate(); }
+
+// ── Core render ───────────────────────────────────────────────────────────────
+function generate() {
+  if (mode === 'image' && !uploadedImg) return;
+
+  const density   = parseInt(document.getElementById('sl-density').value);
+  const contrast  = parseFloat(document.getElementById('sl-contrast').value);
+  const intensity = parseFloat(document.getElementById('sl-intensity').value);
+  const chars     = CHARSETS[charSet];
+
+  // Output canvas size — square-ish, Instagram friendly
+  const COLS = density;
+  const FONT_SIZE = 8;
+  const LINE_H    = FONT_SIZE * 1.15;
+  const CHAR_W    = FONT_SIZE * 0.6;
+
+  // Aspect ratio: match image or use 1:1 for generative
+  let aspectRatio = 1;
+  if (mode === 'image' && uploadedImg) {
+    aspectRatio = uploadedImg.height / uploadedImg.width;
+  }
+
+  const ROWS  = Math.round(COLS * aspectRatio * (CHAR_W / LINE_H));
+  const OUT_W = Math.round(COLS * CHAR_W);
+  const OUT_H = Math.round(ROWS * LINE_H);
+
+  canvas.width  = OUT_W;
+  canvas.height = OUT_H;
+
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = whiteBg ? '#f5f5f0' : '#080808';
+  ctx.fillRect(0, 0, OUT_W, OUT_H);
+
+  // Parse colour
+  const r = parseInt(colorHex.slice(1,3), 16);
+  const g = parseInt(colorHex.slice(3,5), 16);
+  const b = parseInt(colorHex.slice(5,7), 16);
+
+  // Build brightness map
+  let brightness = [];
+
+  if (mode === 'image' && uploadedImg) {
+    // Sample image
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = COLS;
+    offscreen.height = ROWS;
+    const octx = offscreen.getContext('2d');
+    octx.filter = `contrast(${contrast})`;
+    octx.drawImage(uploadedImg, 0, 0, COLS, ROWS);
+    const data = octx.getImageData(0, 0, COLS, ROWS).data;
+
+    for (let row = 0; row < ROWS; row++) {
+      brightness[row] = [];
+      for (let col = 0; col < COLS; col++) {
+        const i = (row * COLS + col) * 4;
+        let lum = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114) / 255;
+        if (invertMode) lum = 1 - lum;
+        brightness[row][col] = lum;
+      }
+    }
+  } else {
+    // Generative patterns
+    for (let row = 0; row < ROWS; row++) {
+      brightness[row] = [];
+      for (let col = 0; col < COLS; col++) {
+        const nx = col / COLS;
+        const ny = row / ROWS;
+        let v = 0;
+
+        if (pattern === 'sine') {
+          v = (Math.sin(nx * Math.PI * 8 + ny * 3) * Math.cos(ny * Math.PI * 6) + 1) / 2;
+        } else if (pattern === 'radial') {
+          const dx = nx - 0.5, dy = ny - 0.5;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          v = (Math.sin(dist * Math.PI * 12) + 1) / 2;
+        } else if (pattern === 'noise') {
+          // Simple pseudo-noise
+          v = Math.abs(Math.sin(nx * 127.1 + ny * 311.7) * Math.sin(nx * 269.5 + ny * 183.3));
+          v = (v + Math.sin((nx + ny) * Math.PI * 7)) / 2;
+          v = Math.abs(v);
+        } else if (pattern === 'grid') {
+          const gx = Math.sin(nx * Math.PI * 20);
+          const gy = Math.sin(ny * Math.PI * 20);
+          v = (gx * gy + 1) / 2;
+        }
+
+        brightness[row][col] = v;
+      }
+    }
+  }
+
+  // Render ASCII
+  ctx.font = `${FONT_SIZE}px "IBM Plex Mono", monospace`;
+  ctx.textBaseline = 'top';
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const lum   = brightness[row][col];
+      const idx   = Math.floor(lum * (chars.length - 1));
+      const ch    = chars[idx];
+      if (ch === ' ') continue;
+
+      const x = col * CHAR_W;
+      const y = row * LINE_H;
+
+      if (colorMode) {
+        // Blend white→color based on brightness + intensity
+        const t = lum * intensity;
+        const cr = Math.round(255 * (1-t) + r * t);
+        const cg = Math.round(255 * (1-t) + g * t);
+        const cb = Math.round(255 * (1-t) + b * t);
+        // On white bg, invert the blend logic
+        if (whiteBg) {
+          const br = Math.round(r * lum * intensity);
+          const bg = Math.round(g * lum * intensity);
+          const bb = Math.round(b * lum * intensity);
+          ctx.fillStyle = `rgb(${br},${bg},${bb})`;
+        } else {
+          ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+        }
+      } else {
+        // Mono: white on black or black on white
+        if (whiteBg) {
+          const v = Math.round((1 - lum) * 80);
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+        } else {
+          const v = Math.round(lum * 255);
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+        }
+      }
+
+      ctx.fillText(ch, x, y);
+    }
+  }
+
+  // Show canvas
+  emptyState.style.display = 'none';
+  canvas.style.display     = 'block';
+  btnDownload.style.display = 'block';
+  hasResult = true;
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+btnDownload.addEventListener('click', () => {
+  if (!hasResult) return;
+
+  // Re-render at 3× for hi-res
+  const density   = parseInt(document.getElementById('sl-density').value);
+  const contrast  = parseFloat(document.getElementById('sl-contrast').value);
+  const intensity = parseFloat(document.getElementById('sl-intensity').value);
+  const chars     = CHARSETS[charSet];
+
+  const SCALE   = 3;
+  const COLS    = density;
+  const FONT_SIZE = 8 * SCALE;
+  const LINE_H    = FONT_SIZE * 1.15;
+  const CHAR_W    = FONT_SIZE * 0.6;
+
+  let aspectRatio = 1;
+  if (mode === 'image' && uploadedImg) {
+    aspectRatio = uploadedImg.height / uploadedImg.width;
+  }
+
+  const ROWS  = Math.round(COLS * aspectRatio * (CHAR_W / LINE_H));
+  const OUT_W = Math.round(COLS * CHAR_W);
+  const OUT_H = Math.round(ROWS * LINE_H);
+
+  const hires = document.createElement('canvas');
+  hires.width  = OUT_W;
+  hires.height = OUT_H;
+  const ctx = hires.getContext('2d');
+
+  ctx.fillStyle = whiteBg ? '#f5f5f0' : '#080808';
+  ctx.fillRect(0, 0, OUT_W, OUT_H);
+
+  const r = parseInt(colorHex.slice(1,3), 16);
+  const g = parseInt(colorHex.slice(3,5), 16);
+  const b = parseInt(colorHex.slice(5,7), 16);
+
+  let brightness = [];
+
+  if (mode === 'image' && uploadedImg) {
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = COLS;
+    offscreen.height = ROWS;
+    const octx = offscreen.getContext('2d');
+    octx.filter = `contrast(${contrast})`;
+    octx.drawImage(uploadedImg, 0, 0, COLS, ROWS);
+    const data = octx.getImageData(0, 0, COLS, ROWS).data;
+    for (let row = 0; row < ROWS; row++) {
+      brightness[row] = [];
+      for (let col = 0; col < COLS; col++) {
+        const i = (row * COLS + col) * 4;
+        let lum = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114) / 255;
+        if (invertMode) lum = 1 - lum;
+        brightness[row][col] = lum;
+      }
+    }
+  } else {
+    for (let row = 0; row < ROWS; row++) {
+      brightness[row] = [];
+      for (let col = 0; col < COLS; col++) {
+        const nx = col / COLS, ny = row / ROWS;
+        let v = 0;
+        if (pattern === 'sine') {
+          v = (Math.sin(nx * Math.PI * 8 + ny * 3) * Math.cos(ny * Math.PI * 6) + 1) / 2;
+        } else if (pattern === 'radial') {
+          const dx = nx - 0.5, dy = ny - 0.5;
+          v = (Math.sin(Math.sqrt(dx*dx+dy*dy) * Math.PI * 12) + 1) / 2;
+        } else if (pattern === 'noise') {
+          v = Math.abs(Math.sin(nx * 127.1 + ny * 311.7) * Math.sin(nx * 269.5 + ny * 183.3));
+          v = (v + Math.sin((nx + ny) * Math.PI * 7)) / 2;
+          v = Math.abs(v);
+        } else if (pattern === 'grid') {
+          v = (Math.sin(nx * Math.PI * 20) * Math.sin(ny * Math.PI * 20) + 1) / 2;
+        }
+        brightness[row][col] = v;
+      }
+    }
+  }
+
+  ctx.font = `${FONT_SIZE}px "IBM Plex Mono", monospace`;
+  ctx.textBaseline = 'top';
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const lum = brightness[row][col];
+      const ch  = chars[Math.floor(lum * (chars.length - 1))];
+      if (ch === ' ') continue;
+      const x = col * CHAR_W, y = row * LINE_H;
+      if (colorMode) {
+        const t = lum * intensity;
+        if (whiteBg) {
+          ctx.fillStyle = `rgb(${Math.round(r*lum*intensity)},${Math.round(g*lum*intensity)},${Math.round(b*lum*intensity)})`;
+        } else {
+          ctx.fillStyle = `rgb(${Math.round(255*(1-t)+r*t)},${Math.round(255*(1-t)+g*t)},${Math.round(255*(1-t)+b*t)})`;
+        }
+      } else {
+        if (whiteBg) {
+          const v = Math.round((1 - lum) * 80);
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+        } else {
+          const v = Math.round(lum * 255);
+          ctx.fillStyle = `rgb(${v},${v},${v})`;
+        }
+      }
+      ctx.fillText(ch, x, y);
+    }
+  }
+
+  const a = document.createElement('a');
+  a.download = 'ORG-ascii-art.png';
+  a.href = hires.toDataURL('image/png');
+  a.click();
+});
+</script>
+</body>
+</html>

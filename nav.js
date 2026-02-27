@@ -9,6 +9,7 @@ const ORG_NAV = {
     { num: '003', name: 'Glitch Generator',    file: 'glitch.html'              },
     { num: '004', name: 'Life Calendar',        file: 'life-calendar.html'       },
     { num: '005', name: 'Life Calculator',     file: 'life-calculator.html'     },
+    { num: '006', name: 'ASCII Art Generator', file: 'ascii-art.html'            },
   ],
 
   links: [

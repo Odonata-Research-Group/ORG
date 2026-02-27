@@ -273,7 +273,7 @@
   <!-- CASE STUDIES -->
   <div class="section-header">
     <div class="section-label">Case Studies</div>
-    <div class="section-count">005 published</div>
+    <div class="section-count">006 published</div>
   </div>
 
   <div class="grid">
@@ -353,19 +353,20 @@
       </div>
     </a>
 
-    <!-- 006 coming soon -->
-    <div class="card soon">
-      <div class="card-thumb">
+    <!-- 006 -->
+    <a class="card" href="ascii-art.html">
+      <div class="card-thumb" id="thumb-006">
         <span class="card-num">006</span>
       </div>
       <div class="card-body">
-        <div class="card-title">——</div>
-        <div class="card-desc">Coming soon.</div>
+        <div class="card-title">ASCII Art Generator</div>
+        <div class="card-desc">Convert any image to ASCII art using brightness mapping. Or generate patterns from scratch. Mono or colour, adjustable density. Export PNG.</div>
         <div class="card-footer">
-          <span class="card-tag">——</span>
+          <span class="card-tag">Tool · Image</span>
+          <span class="card-arrow">→</span>
         </div>
       </div>
-    </div>
+    </a>
 
   </div>
 
@@ -521,6 +522,28 @@ makePlaceholder('thumb-004', (ctx, W, H) => {
         continue;
       }
       ctx.fillRect(x, y, s, s);
+    }
+  }
+});
+
+// 006 — ascii art
+makePlaceholder('thumb-006', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  ctx.font = '7px IBM Plex Mono, monospace';
+  ctx.textBaseline = 'top';
+  const chars = ' .,:;i1tfLCG08@#';
+  const cols = 52, rows = 38;
+  const cw = W / cols, ch = H / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const nx = c/cols, ny = r/rows;
+      const v = (Math.sin(nx*Math.PI*8+ny*3)*Math.cos(ny*Math.PI*6)+1)/2;
+      const ch2 = chars[Math.floor(v*(chars.length-1))];
+      if (ch2 === ' ') continue;
+      const lum = Math.round(v*200);
+      ctx.fillStyle = \`rgb(\${lum},\${lum},\${lum})\`;
+      ctx.fillText(ch2, c*cw, r*ch);
     }
   }
 });
