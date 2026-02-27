@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — Keyboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── CANVAS ──────────────────────────────── */
+  #stage {
+    flex: 1;
+    position: relative;
+    cursor: crosshair;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── BOTTOM BAR ──────────────────────────── */
+  .bottom-bar {
+    height: 56px;
+    border-top: 1px solid var(--dim);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 0;
+    flex-shrink: 0;
+    background: var(--black);
+  }
+
+  /* Mode buttons */
+  .mode-group {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .mode-btn {
+    background: none;
+    border: 1px solid var(--dim);
+    color: var(--bright);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .mode-btn:hover { border-color: var(--bright); color: var(--white); }
+  .mode-btn.active { background: var(--white); color: var(--black); border-color: var(--white); }
+
+  /* Scale selector */
+  .scale-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 24px;
+    border-left: 1px solid var(--dim);
+    border-right: 1px solid var(--dim);
+    margin: 0 24px;
+  }
+
+  .scale-label {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bright);
+  }
+
+  .scale-select {
+    background: none;
+    border: 1px solid var(--mid);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    padding: 6px 10px;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  option { background: #0d0d0d; }
+
+  /* Colour toggle */
+  .color-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .color-label {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bright);
+  }
+
+  .color-swatches {
+    display: flex;
+    gap: 6px;
+  }
+
+  .swatch {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.12s, transform 0.12s;
+  }
+  .swatch:hover { transform: scale(1.2); }
+  .swatch.active { border-color: var(--white); }
+
+  /* Key hint overlay */
+  .hint {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #222;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 1s;
+  }
+  .hint.hidden { opacity: 0; }
+
+  /* Key flash indicators */
+  .key-row {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    pointer-events: none;
+  }
+
+  .key-pill {
+    font-size: 7px;
+    letter-spacing: 0.15em;
+    padding: 3px 6px;
+    border: 1px solid #1a1a1a;
+    color: #222;
+    transition: color 0.05s, border-color 0.05s;
+    text-transform: uppercase;
+  }
+  .key-pill.lit { color: var(--white); border-color: #444; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="canvas"></canvas>
+  <div class="key-row" id="key-row"></div>
+</div>
+
+<div class="bottom-bar">
+  <div class="mode-group">
+    <button class="mode-btn active" data-mode="ripple">Ripple</button>
+    <button class="mode-btn" data-mode="particles">Particles</button>
+    <button class="mode-btn" data-mode="ink">Ink</button>
+    <button class="mode-btn" data-mode="waveform">Waveform</button>
+  </div>
+
+  <div class="scale-group">
+    <span class="scale-label">Scale</span>
+    <select class="scale-select" id="scale-select">
+      <option value="pentatonic">Pentatonic</option>
+      <option value="major">Major</option>
+      <option value="minor">Minor</option>
+      <option value="chromatic">Chromatic</option>
+    </select>
+  </div>
+
+  <div class="color-group">
+    <span class="color-label">Colour</span>
+    <div class="color-swatches">
+      <div class="swatch active" data-color="white"  style="background:#eeeae2"></div>
+      <div class="swatch" data-color="red"    style="background:#ff3020"></div>
+      <div class="swatch" data-color="yellow" style="background:#ffdd00"></div>
+      <div class="swatch" data-color="#00ff88" style="background:#00ff88"></div>
+      <div class="swatch" data-color="#00aaff" style="background:#00aaff"></div>
+      <div class="swatch" data-color="rainbow" style="background: conic-gradient(red,yellow,green,blue,red)"></div>
+    </div>
+  </div>
+</div>
+
+<script src="nav.js"></script>
+<script>
+// ── Key → note mapping ────────────────────────────────────────────────────────
+const KEYS = ['a','s','d','f','g','h','j','k','l',
+              'q','w','e','r','t','y','u','i','o','p',
+              'z','x','c','v','b','n','m'];
+
+const SCALES = {
+  pentatonic: [0, 2, 4, 7, 9],          // C D E G A
+  major:      [0, 2, 4, 5, 7, 9, 11],   // C D E F G A B
+  minor:      [0, 2, 3, 5, 7, 8, 10],   // C D Eb F G Ab Bb
+  chromatic:  [0,1,2,3,4,5,6,7,8,9,10,11],
+};
+
+const BASE_FREQ = 130.81; // C3
+
+function getFreq(keyIndex, scale) {
+  const intervals = SCALES[scale];
+  const octave    = Math.floor(keyIndex / intervals.length);
+  const degree    = keyIndex % intervals.length;
+  const semitones = octave * 12 + intervals[degree];
+  return BASE_FREQ * Math.pow(2, semitones / 12);
+}
+
+// ── Audio ─────────────────────────────────────────────────────────────────────
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playNote(freq) {
+  ensureAudio();
+  const osc  = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+  // Also add a soft sub-octave for warmth
+  const osc2 = audioCtx.createOscillator();
+  const gain2 = audioCtx.createGain();
+  osc2.connect(gain2);
+  gain2.connect(audioCtx.destination);
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(freq / 2, audioCtx.currentTime);
+  gain2.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
+  gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
+
+  osc.start(); osc.stop(audioCtx.currentTime + 1.8);
+  osc2.start(); osc2.stop(audioCtx.currentTime + 1.8);
+}
+
+// ── Canvas & state ────────────────────────────────────────────────────────────
+const canvas  = document.getElementById('canvas');
+const ctx     = canvas.getContext('2d');
+let W, H;
+let particles = [];
+let mode      = 'ripple';
+let colorMode = 'white';
+let scale     = 'pentatonic';
+let frame     = 0;
+let wavePoints = []; // for waveform mode
+
+function resize() {
+  W = canvas.width  = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── Colour helper ─────────────────────────────────────────────────────────────
+function getColor(keyIndex, alpha) {
+  alpha = alpha === undefined ? 1 : alpha;
+  if (colorMode === 'white')   return `rgba(238,234,226,${alpha})`;
+  if (colorMode === 'red')     return `rgba(255,48,32,${alpha})`;
+  if (colorMode === 'yellow')  return `rgba(255,221,0,${alpha})`;
+  if (colorMode === '#00ff88') return `rgba(0,255,136,${alpha})`;
+  if (colorMode === '#00aaff') return `rgba(0,170,255,${alpha})`;
+  if (colorMode === 'rainbow') {
+    const hue = (keyIndex / KEYS.length) * 360;
+    return `hsla(${hue},100%,70%,${alpha})`;
+  }
+  return `rgba(238,234,226,${alpha})`;
+}
+
+// ── Spawn event ───────────────────────────────────────────────────────────────
+function spawnEvent(keyIndex) {
+  const x = (0.08 + (keyIndex / KEYS.length) * 0.84) * W;
+  const y = H * (0.3 + Math.random() * 0.4);
+  const freq = getFreq(keyIndex, scale);
+  const pitch = keyIndex / KEYS.length; // 0=low 1=high
+
+  if (mode === 'ripple') {
+    particles.push({ type:'ripple', x, y, r:0, maxR: 80+pitch*120, life:1, keyIndex, freq });
+    // Second ring slightly delayed
+    setTimeout(() => {
+      particles.push({ type:'ripple', x, y, r:0, maxR: (80+pitch*120)*0.6, life:1, keyIndex, freq, delay:true });
+    }, 80);
+  }
+
+  else if (mode === 'particles') {
+    const count = 18 + Math.floor(pitch * 20);
+    for (let i = 0; i < count; i++) {
+      const angle  = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+      const speed  = 1.5 + Math.random() * 3 + pitch * 2;
+      particles.push({
+        type:'particle', x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1,
+        life: 1, size: 2 + Math.random() * 3, keyIndex,
+      });
+    }
+    // Central flash
+    particles.push({ type:'flash', x, y, life:1, keyIndex });
+  }
+
+  else if (mode === 'ink') {
+    const blobs = 5 + Math.floor(pitch * 6);
+    for (let i = 0; i < blobs; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = Math.random() * 20;
+      particles.push({
+        type: 'ink', x: x + Math.cos(angle)*dist, y: y + Math.sin(angle)*dist,
+        r: 0, maxR: 20 + Math.random() * (40 + pitch * 60),
+        life: 1, keyIndex,
+        wobble: (Math.random()-0.5)*0.4,
+      });
+    }
+  }
+
+  else if (mode === 'waveform') {
+    wavePoints.push({ keyIndex, freq, born: frame, amp: 30 + pitch * 60 });
+    // Cap wavepoints
+    if (wavePoints.length > 8) wavePoints.shift();
+  }
+}
+
+// ── Animation loop ────────────────────────────────────────────────────────────
+function draw() {
+  frame++;
+  requestAnimationFrame(draw);
+
+  // Fade trail
+  ctx.fillStyle = 'rgba(8,8,8,0.18)';
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Waveform mode — draw continuous waves ──────────────────────────────────
+  if (mode === 'waveform') {
+    wavePoints = wavePoints.filter(wp => frame - wp.born < 200);
+    wavePoints.forEach(wp => {
+      const age   = frame - wp.born;
+      const alpha = Math.max(0, 1 - age / 200);
+      const color = getColor(wp.keyIndex, alpha * 0.7);
+      const speed = 0.04 + (wp.keyIndex / KEYS.length) * 0.06;
+      const phase = age * speed;
+
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth   = 1.5;
+      for (let px = 0; px < W; px += 2) {
+        const nx  = px / W;
+        const py  = H / 2 + Math.sin(nx * Math.PI * 6 + phase) * wp.amp
+                          * Math.sin(nx * Math.PI); // envelope
+        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    });
+  }
+
+  // ── Other particles ────────────────────────────────────────────────────────
+  particles = particles.filter(p => p.life > 0);
+
+  particles.forEach(p => {
+    if (p.type === 'ripple') {
+      p.r    += (p.maxR - p.r) * 0.06;
+      p.life -= 0.012;
+      const alpha = p.life * 0.8;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.strokeStyle = getColor(p.keyIndex, alpha);
+      ctx.lineWidth   = p.life * 2;
+      ctx.stroke();
+    }
+
+    else if (p.type === 'particle') {
+      p.vy   += 0.08; // gravity
+      p.x    += p.vx;
+      p.y    += p.vy;
+      p.vx   *= 0.97;
+      p.life -= 0.018;
+      const alpha = p.life;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = getColor(p.keyIndex, alpha);
+      ctx.fill();
+    }
+
+    else if (p.type === 'flash') {
+      p.life -= 0.08;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, (1-p.life) * 20, 0, Math.PI * 2);
+      ctx.fillStyle = getColor(p.keyIndex, p.life * 0.6);
+      ctx.fill();
+    }
+
+    else if (p.type === 'ink') {
+      p.r    += (p.maxR - p.r) * 0.04;
+      p.life -= 0.008;
+      const alpha = p.life * 0.5;
+      // Organic blob using multiple arcs
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 2; a += 0.3) {
+        const wobble = 1 + Math.sin(a * 3 + frame * 0.05) * p.wobble;
+        const rx = p.x + Math.cos(a) * p.r * wobble;
+        const ry = p.y + Math.sin(a) * p.r * wobble * 1.3;
+        a === 0 ? ctx.moveTo(rx, ry) : ctx.lineTo(rx, ry);
+      }
+      ctx.closePath();
+      ctx.fillStyle = getColor(p.keyIndex, alpha);
+      ctx.fill();
+    }
+  });
+}
+
+draw();
+
+// ── Keyboard input ────────────────────────────────────────────────────────────
+const pressed = new Set();
+const pills   = {};
+
+// Build key row
+const keyRow = document.getElementById('key-row');
+KEYS.forEach(k => {
+  const el = document.createElement('div');
+  el.className = 'key-pill';
+  el.textContent = k;
+  keyRow.appendChild(el);
+  pills[k] = el;
+});
+
+// Hide hint after first keypress
+let hintGone = false;
+
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const key = e.key.toLowerCase();
+  const idx = KEYS.indexOf(key);
+  if (idx === -1) return;
+  e.preventDefault();
+
+  if (!hintGone) {
+    hintGone = true;
+    keyRow.style.opacity = '0';
+    setTimeout(() => keyRow.style.display = 'none', 1000);
+  }
+
+  pressed.add(key);
+  pills[key]?.classList.add('lit');
+
+  const freq = getFreq(idx, scale);
+  playNote(freq);
+  spawnEvent(idx);
+});
+
+document.addEventListener('keyup', e => {
+  const key = e.key.toLowerCase();
+  pressed.delete(key);
+  pills[key]?.classList.remove('lit');
+});
+
+// ── Mouse / touch input ───────────────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const x    = e.clientX - rect.left;
+  const idx  = Math.floor((x / W) * KEYS.length);
+  const keyIdx = Math.min(KEYS.length - 1, Math.max(0, idx));
+  playNote(getFreq(keyIdx, scale));
+  spawnEvent(keyIdx);
+});
+
+// ── UI controls ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    particles = [];
+    wavePoints = [];
+    // Full clear
+    ctx.fillStyle = '#080808';
+    ctx.fillRect(0, 0, W, H);
+  });
+});
+
+document.getElementById('scale-select').addEventListener('change', function() {
+  scale = this.value;
+});
+
+document.querySelectorAll('.swatch').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+    colorMode = s.dataset.color;
+  });
+});
+</script>
+</body>
+</html>
