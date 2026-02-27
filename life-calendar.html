@@ -33,7 +33,6 @@
     flex: 1;
   }
 
-  /* ── CANVAS AREA ─────────────────────────── */
   .canvas-area {
     border-right: 1px solid var(--dim);
     display: flex;
@@ -41,14 +40,8 @@
     align-items: center;
     justify-content: center;
     padding: 40px;
-    position: relative;
     min-height: calc(100vh - 64px);
-  }
-
-  #calendar-canvas {
-    max-width: 100%;
-    max-height: calc(100vh - 180px);
-    display: block;
+    overflow: auto;
   }
 
   .canvas-empty {
@@ -57,22 +50,11 @@
     align-items: center;
     gap: 14px;
   }
+  .canvas-empty-icon { font-size: 32px; color: var(--mid); }
+  .canvas-empty-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid); text-align: center; line-height: 2; }
 
-  .canvas-empty-icon {
-    font-size: 32px;
-    color: var(--mid);
-  }
+  #calendar-canvas { max-width: 100%; display: block; }
 
-  .canvas-empty-label {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--mid);
-    text-align: center;
-    line-height: 2;
-  }
-
-  /* Stats strip below canvas */
   .stats-strip {
     display: flex;
     gap: 40px;
@@ -82,70 +64,18 @@
   }
   .stats-strip.visible { opacity: 1; }
 
-  .stat {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .stat-value {
-    font-size: 22px;
-    font-weight: 300;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 8px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--bright);
-  }
+  .stat { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .stat-value { font-size: 20px; font-weight: 300; letter-spacing: -0.02em; color: var(--white); line-height: 1; }
+  .stat-label { font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--bright); }
 
   /* ── CONTROLS ────────────────────────────── */
-  .controls {
-    display: flex;
-    flex-direction: column;
-    padding: 32px 24px;
-  }
+  .controls { display: flex; flex-direction: column; padding: 32px 24px; }
+  .controls-title { font-size: 9px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--bright); margin-bottom: 28px; }
+  .control-group { padding: 16px 0; border-bottom: 1px solid var(--dim); }
+  .control-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--white); margin-bottom: 10px; display: block; }
+  .control-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .control-value { font-size: 9px; color: var(--bright); }
 
-  .controls-title {
-    font-size: 9px;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--bright);
-    margin-bottom: 28px;
-  }
-
-  .control-group {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--dim);
-  }
-
-  .control-label {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 10px;
-    display: block;
-  }
-
-  .control-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .control-value {
-    font-size: 9px;
-    color: var(--bright);
-  }
-
-  /* Date input */
   input[type="date"] {
     background: var(--dim);
     border: 1px solid var(--mid);
@@ -154,15 +84,12 @@
     font-size: 10px;
     padding: 8px 10px;
     width: 100%;
-    letter-spacing: 0.05em;
     outline: none;
     transition: border-color 0.15s;
-    -webkit-appearance: none;
     color-scheme: dark;
   }
   input[type="date"]:focus { border-color: var(--bright); }
 
-  /* Range slider */
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
@@ -181,16 +108,9 @@
   }
   input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.5); }
 
-  /* Colour accent swatches */
-  .swatch-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
+  .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .swatch {
-    width: 20px;
-    height: 20px;
+    width: 20px; height: 20px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
@@ -198,91 +118,27 @@
   }
   .swatch:hover { transform: scale(1.2); }
   .swatch.active { border-color: var(--white); }
-  .swatch.none {
-    background: var(--white) !important;
-    position: relative;
-  }
 
-  /* Toggle switch */
-  .toggle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .toggle-name {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-  .toggle-switch {
-    width: 28px; height: 14px;
-    background: var(--mid);
-    border-radius: 7px;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.15s;
-    flex-shrink: 0;
-  }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+  .toggle-name { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--white); }
+  .toggle-switch { width: 28px; height: 14px; background: var(--mid); border-radius: 7px; position: relative; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
   .toggle-switch.on { background: var(--white); }
-  .toggle-switch::after {
-    content: '';
-    position: absolute;
-    top: 2px; left: 2px;
-    width: 10px; height: 10px;
-    background: var(--black);
-    border-radius: 50%;
-    transition: transform 0.15s;
-  }
+  .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; background: var(--black); border-radius: 50%; transition: transform 0.15s; }
   .toggle-switch.on::after { transform: translateX(14px); }
 
-  /* ── ACTIONS ─────────────────────────────── */
-  .actions {
-    margin-top: auto;
-    padding-top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .actions { margin-top: auto; padding-top: 24px; display: flex; flex-direction: column; gap: 6px; }
 
-  .btn-primary {
-    width: 100%;
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    padding: 12px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
+  .btn-primary { width: 100%; background: var(--white); color: var(--black); border: none; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; padding: 12px; cursor: pointer; transition: opacity 0.15s; }
   .btn-primary:hover { opacity: 0.82; }
   .btn-primary:disabled { opacity: 0.18; cursor: not-allowed; }
 
-  .btn-secondary {
-    width: 100%;
-    background: none;
-    color: var(--white);
-    border: 1px solid var(--mid);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    padding: 12px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    display: none;
-  }
+  .btn-secondary { width: 100%; background: none; color: var(--white); border: 1px solid var(--mid); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; padding: 12px; cursor: pointer; transition: border-color 0.15s; display: none; }
   .btn-secondary:hover { border-color: var(--white); }
 </style>
 </head>
 <body>
 
 <div class="app">
-
-  <!-- CANVAS -->
   <div class="canvas-area">
     <div class="canvas-empty" id="canvas-empty">
       <div class="canvas-empty-icon">◆</div>
@@ -290,26 +146,13 @@
     </div>
     <canvas id="calendar-canvas" style="display:none"></canvas>
     <div class="stats-strip" id="stats-strip">
-      <div class="stat">
-        <span class="stat-value" id="stat-lived">—</span>
-        <span class="stat-label">Weeks lived</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="stat-remaining">—</span>
-        <span class="stat-label">Weeks remaining</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="stat-pct">—</span>
-        <span class="stat-label">Life elapsed</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="stat-age">—</span>
-        <span class="stat-label">Current age</span>
-      </div>
+      <div class="stat"><span class="stat-value" id="stat-lived">—</span><span class="stat-label">Weeks lived</span></div>
+      <div class="stat"><span class="stat-value" id="stat-remaining">—</span><span class="stat-label">Weeks remaining</span></div>
+      <div class="stat"><span class="stat-value" id="stat-pct">—</span><span class="stat-label">Life elapsed</span></div>
+      <div class="stat"><span class="stat-value" id="stat-age">—</span><span class="stat-label">Current age</span></div>
     </div>
   </div>
 
-  <!-- CONTROLS -->
   <div class="controls">
     <div class="controls-title">Parameters</div>
 
@@ -357,281 +200,212 @@
       <button class="btn-secondary" id="btn-download">↓ Download PNG</button>
     </div>
   </div>
-
 </div>
 
 <script src="nav.js"></script>
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
 let accentColor = 'none';
 let showDecades = true;
 let showCurrent = true;
 
-// ── DOB input ─────────────────────────────────────────────────────────────────
 const dobInput   = document.getElementById('dob');
 const btnGen     = document.getElementById('btn-generate');
 const btnDL      = document.getElementById('btn-download');
 const canvas     = document.getElementById('calendar-canvas');
 const emptyState = document.getElementById('canvas-empty');
 
-dobInput.addEventListener('input', () => {
-  btnGen.disabled = !dobInput.value;
-});
-
-// Auto-generate on any control change if DOB is set
-function autoGenerate() {
-  if (dobInput.value) drawCalendar();
-}
-
-// ── Life expectancy slider ────────────────────────────────────────────────────
-const slLife = document.getElementById('sl-life');
-slLife.addEventListener('input', () => {
-  document.getElementById('val-life').textContent = slLife.value + ' yrs';
+dobInput.addEventListener('input', () => { btnGen.disabled = !dobInput.value; autoGenerate(); });
+document.getElementById('sl-life').addEventListener('input', () => {
+  document.getElementById('val-life').textContent = document.getElementById('sl-life').value + ' yrs';
   autoGenerate();
 });
-
-// ── Colour swatches ───────────────────────────────────────────────────────────
 document.querySelectorAll('.swatch').forEach(s => {
   s.addEventListener('click', () => {
     document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
-    s.classList.add('active');
-    accentColor = s.dataset.color;
-    autoGenerate();
+    s.classList.add('active'); accentColor = s.dataset.color; autoGenerate();
   });
 });
-
-// ── Toggles ───────────────────────────────────────────────────────────────────
-document.getElementById('tog-decades').addEventListener('click', function() {
-  showDecades = !showDecades;
-  this.classList.toggle('on', showDecades);
-  autoGenerate();
-});
-document.getElementById('tog-current').addEventListener('click', function() {
-  showCurrent = !showCurrent;
-  this.classList.toggle('on', showCurrent);
-  autoGenerate();
-});
-
-// ── Generate ──────────────────────────────────────────────────────────────────
+document.getElementById('tog-decades').addEventListener('click', function() { showDecades = !showDecades; this.classList.toggle('on', showDecades); autoGenerate(); });
+document.getElementById('tog-current').addEventListener('click', function() { showCurrent = !showCurrent; this.classList.toggle('on', showCurrent); autoGenerate(); });
 btnGen.addEventListener('click', drawCalendar);
+function autoGenerate() { if (dobInput.value) drawCalendar(); }
 
-function drawCalendar() {
-  if (!dobInput.value) return;
-
+// ── Shared render function ────────────────────────────────────────────────────
+// ORIENTATION: years across (columns), weeks down (rows)
+// So each column = one year of life, each row = one week within that year
+function renderToCanvas(target, S, includeStats) {
   const dob         = new Date(dobInput.value);
-  const lifeYears   = parseInt(slLife.value);
+  const lifeYears   = parseInt(document.getElementById('sl-life').value);
   const today       = new Date();
   const totalWeeks  = lifeYears * 52;
-
-  // Week number helpers
   const msPerWeek   = 7 * 24 * 60 * 60 * 1000;
   const weeksLived  = Math.floor((today - dob) / msPerWeek);
   const currentAge  = (today - dob) / (365.25 * 24 * 60 * 60 * 1000);
   const currentYear = Math.floor(currentAge);
+  const remaining   = Math.max(0, totalWeeks - weeksLived);
+  const pct         = Math.min(100, weeksLived / totalWeeks * 100).toFixed(1);
 
-  // Stats
-  const remaining = Math.max(0, totalWeeks - weeksLived);
-  const pct       = Math.min(100, (weeksLived / totalWeeks * 100)).toFixed(1);
-
-  document.getElementById('stat-lived').textContent     = weeksLived.toLocaleString();
-  document.getElementById('stat-remaining').textContent = remaining.toLocaleString();
-  document.getElementById('stat-pct').textContent       = pct + '%';
-  document.getElementById('stat-age').textContent       = currentAge.toFixed(1);
-  document.getElementById('stats-strip').classList.add('visible');
-
-  // ── Layout ────────────────────────────────────────────────────────────────
-  const COLS       = 52;   // weeks across
-  const ROWS       = lifeYears; // years down
-  const CELL       = 8;    // cell size px
-  const GAP        = 2;    // gap between cells
+  // Layout — years = columns, weeks = rows
+  const COLS       = lifeYears; // one column per year
+  const ROWS       = 52;        // 52 weeks per year
+  const CELL       = 6 * S;
+  const GAP        = 1.5 * S;
   const STEP       = CELL + GAP;
-  const PAD_LEFT   = 36;   // space for decade labels
-  const PAD_TOP    = 16;
-  const PAD_BOTTOM = 24;
-  const PAD_RIGHT  = 16;
+  const PAD_TOP    = 28 * S;    // space for year labels at top
+  const PAD_LEFT   = 28 * S;   // space for week labels on left
+  const PAD_RIGHT  = 16 * S;
+  const STATS_H    = includeStats ? 56 * S : 0;
+  const PAD_BOTTOM = 16 * S + STATS_H;
 
   const W = PAD_LEFT + COLS * STEP - GAP + PAD_RIGHT;
   const H = PAD_TOP  + ROWS * STEP - GAP + PAD_BOTTOM;
 
-  canvas.width  = W;
-  canvas.height = H;
+  target.width  = W;
+  target.height = H;
 
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#080808';
-  ctx.fillRect(0, 0, W, H);
-
-  const fillLived   = accentColor === 'none' ? '#eeeae2' : accentColor;
-  const fillFuture  = '#1e1e1e';
-  const strokeColor = '#2a2a2a';
-
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      const weekIndex = row * 52 + col;
-      const x = PAD_LEFT + col * STEP;
-      const y = PAD_TOP  + row * STEP;
-
-      const isLived   = weekIndex < weeksLived;
-      const isCurrent = weekIndex === weeksLived;
-
-      ctx.beginPath();
-      ctx.rect(x, y, CELL, CELL);
-
-      if (isCurrent && showCurrent) {
-        // Pulsing current week — bright accent or white outline
-        ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
-        ctx.fill();
-        // Inner highlight
-        ctx.fillStyle = '#080808';
-        ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
-      } else if (isLived) {
-        ctx.fillStyle = fillLived;
-        ctx.fill();
-      } else {
-        ctx.fillStyle = fillFuture;
-        ctx.fill();
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-    }
-
-    // Decade markers on left
-    if (row % 10 === 0 && showDecades) {
-      ctx.fillStyle = row === currentYear ? (accentColor === 'none' ? '#eeeae2' : accentColor) : '#444';
-      ctx.font = '7px IBM Plex Mono, monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(row === 0 ? 'born' : row + '', PAD_LEFT - 6, PAD_TOP + row * STEP + CELL - 1);
-    }
-  }
-
-  // Current year tick on left margin
-  if (showCurrent) {
-    const tickY = PAD_TOP + currentYear * STEP + CELL / 2;
-    ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
-    ctx.font      = '7px IBM Plex Mono, monospace';
-    ctx.textAlign = 'right';
-    if (currentYear % 10 !== 0) { // don't double-draw on decade
-      ctx.fillText(currentYear + '', PAD_LEFT - 6, tickY + 3);
-    }
-    // Arrow marker
-    ctx.beginPath();
-    ctx.moveTo(PAD_LEFT - 3, tickY - 3);
-    ctx.lineTo(PAD_LEFT - 3, tickY + 3);
-    ctx.lineTo(PAD_LEFT,     tickY);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // Week column labels (10, 20, 30, 40, 50)
-  ctx.fillStyle  = '#333';
-  ctx.font       = '7px IBM Plex Mono, monospace';
-  ctx.textAlign  = 'center';
-  [10, 20, 30, 40, 50].forEach(w => {
-    const x = PAD_LEFT + (w - 1) * STEP + CELL / 2;
-    ctx.fillText(w, x, H - 8);
-  });
-
-  // Show canvas, hide empty state
-  emptyState.style.display = 'none';
-  canvas.style.display = 'block';
-  btnDL.style.display = 'block';
-}
-
-// ── Download ──────────────────────────────────────────────────────────────────
-btnDL.addEventListener('click', () => {
-  // Render at 3× for high-res download
-  if (!dobInput.value) return;
-
-  const dob         = new Date(dobInput.value);
-  const lifeYears   = parseInt(slLife.value);
-  const today       = new Date();
-  const msPerWeek   = 7 * 24 * 60 * 60 * 1000;
-  const weeksLived  = Math.floor((today - dob) / msPerWeek);
-  const currentAge  = (today - dob) / (365.25 * 24 * 60 * 60 * 1000);
-  const currentYear = Math.floor(currentAge);
-
-  const SCALE      = 3;
-  const COLS       = 52;
-  const ROWS       = lifeYears;
-  const CELL       = 8 * SCALE;
-  const GAP        = 2 * SCALE;
-  const STEP       = CELL + GAP;
-  const PAD_LEFT   = 36 * SCALE;
-  const PAD_TOP    = 16 * SCALE;
-  const PAD_BOTTOM = 24 * SCALE;
-  const PAD_RIGHT  = 16 * SCALE;
-  const W          = PAD_LEFT + COLS * STEP - GAP + PAD_RIGHT;
-  const H          = PAD_TOP  + ROWS * STEP - GAP + PAD_BOTTOM;
-
-  const hires = document.createElement('canvas');
-  hires.width = W; hires.height = H;
-  const ctx = hires.getContext('2d');
-
+  const ctx = target.getContext('2d');
   ctx.fillStyle = '#080808';
   ctx.fillRect(0, 0, W, H);
 
   const fillLived  = accentColor === 'none' ? '#eeeae2' : accentColor;
-  const fillFuture = '#1e1e1e';
-  const strokeCol  = '#2a2a2a';
+  const fillFuture = '#161616';
 
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      const weekIndex = row * 52 + col;
+  // ── Grid ──────────────────────────────────────────────────────────────────
+  for (let col = 0; col < COLS; col++) {        // col = year
+    for (let row = 0; row < ROWS; row++) {      // row = week within year
+      const weekIndex = col * 52 + row;
       const x = PAD_LEFT + col * STEP;
       const y = PAD_TOP  + row * STEP;
       const isLived   = weekIndex < weeksLived;
       const isCurrent = weekIndex === weeksLived;
 
-      ctx.beginPath();
-      ctx.rect(x, y, CELL, CELL);
-
       if (isCurrent && showCurrent) {
-        ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
-        ctx.fill();
+        // Hollow square for current week
+        ctx.fillStyle = fillLived;
+        ctx.fillRect(x, y, CELL, CELL);
         ctx.fillStyle = '#080808';
-        ctx.fillRect(x + SCALE*2, y + SCALE*2, CELL - SCALE*4, CELL - SCALE*4);
+        ctx.fillRect(x + 1.5*S, y + 1.5*S, CELL - 3*S, CELL - 3*S);
       } else if (isLived) {
         ctx.fillStyle = fillLived;
-        ctx.fill();
+        ctx.fillRect(x, y, CELL, CELL);
       } else {
         ctx.fillStyle = fillFuture;
-        ctx.fill();
-        ctx.strokeStyle = strokeCol;
-        ctx.lineWidth = 0.5 * SCALE;
-        ctx.stroke();
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.strokeStyle = '#232323';
+        ctx.lineWidth = 0.4 * S;
+        ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
       }
     }
 
-    if (row % 10 === 0 && showDecades) {
-      ctx.fillStyle  = row === currentYear ? (accentColor === 'none' ? '#eeeae2' : accentColor) : '#444';
-      ctx.font       = `${7 * SCALE}px IBM Plex Mono, monospace`;
-      ctx.textAlign  = 'right';
-      ctx.fillText(row === 0 ? 'born' : row + '', PAD_LEFT - 6 * SCALE, PAD_TOP + row * STEP + CELL - SCALE);
+    // Year labels at top — every decade
+    if (col % 10 === 0 && showDecades) {
+      const x = PAD_LEFT + col * STEP + CELL / 2;
+      ctx.fillStyle = col === currentYear
+        ? (accentColor === 'none' ? '#eeeae2' : accentColor)
+        : '#3a3a3a';
+      ctx.font      = `${6 * S}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(col === 0 ? '0' : col + '', x, PAD_TOP - 8*S);
     }
   }
 
+  // Current year tick at top
   if (showCurrent) {
-    const tickY = PAD_TOP + currentYear * STEP + CELL / 2;
-    ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
-    ctx.font      = `${7 * SCALE}px IBM Plex Mono, monospace`;
-    ctx.textAlign = 'right';
-    if (currentYear % 10 !== 0) ctx.fillText(currentYear + '', PAD_LEFT - 6 * SCALE, tickY + 3 * SCALE);
+    const tickX = PAD_LEFT + currentYear * STEP + CELL / 2;
+    ctx.fillStyle = fillLived;
+    ctx.font = `${6 * S}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'center';
+    // Small downward arrow
     ctx.beginPath();
-    ctx.moveTo(PAD_LEFT - 3*SCALE, tickY - 3*SCALE);
-    ctx.lineTo(PAD_LEFT - 3*SCALE, tickY + 3*SCALE);
-    ctx.lineTo(PAD_LEFT,           tickY);
+    ctx.moveTo(tickX - 3*S, PAD_TOP - 4*S);
+    ctx.lineTo(tickX + 3*S, PAD_TOP - 4*S);
+    ctx.lineTo(tickX,       PAD_TOP - S);
     ctx.closePath();
     ctx.fill();
+    // Current year label (if not already drawn as decade)
+    if (currentYear % 10 !== 0) {
+      ctx.fillText(currentYear + '', tickX, PAD_TOP - 13*S);
+    }
   }
 
-  ctx.fillStyle = '#333';
-  ctx.font = `${7 * SCALE}px IBM Plex Mono, monospace`;
-  ctx.textAlign = 'center';
-  [10, 20, 30, 40, 50].forEach(w => {
-    const x = PAD_LEFT + (w - 1) * STEP + CELL / 2;
-    ctx.fillText(w, x, H - 8 * SCALE);
+  // Week labels on left — every 13 (quarterly)
+  ctx.fillStyle = '#2a2a2a';
+  ctx.font      = `${5.5 * S}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'right';
+  [1, 13, 26, 39, 52].forEach(w => {
+    const y = PAD_TOP + (w - 1) * STEP + CELL / 2 + 2*S;
+    ctx.fillText('wk ' + w, PAD_LEFT - 5*S, y);
   });
 
+  // "years" axis label at top left
+  ctx.fillStyle = '#2a2a2a';
+  ctx.font      = `${5.5 * S}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'left';
+  ctx.fillText('years →', PAD_LEFT, 10*S);
+
+  // ── Stats footer ──────────────────────────────────────────────────────────
+  if (includeStats) {
+    const baseY = H - STATS_H + 6*S;
+
+    // Divider
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth   = S * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD_LEFT, baseY);
+    ctx.lineTo(W - PAD_RIGHT, baseY);
+    ctx.stroke();
+
+    const statItems = [
+      { label: 'WEEKS LIVED',     value: weeksLived.toLocaleString() },
+      { label: 'WEEKS REMAINING', value: remaining.toLocaleString()  },
+      { label: 'LIFE ELAPSED',    value: pct + '%'                   },
+      { label: 'CURRENT AGE',     value: currentAge.toFixed(1)       },
+    ];
+
+    const colW = (W - PAD_LEFT - PAD_RIGHT) / 4;
+    statItems.forEach((s, i) => {
+      const x = PAD_LEFT + i * colW + colW / 2;
+      ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
+      ctx.font      = `300 ${13 * S}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(s.value, x, baseY + 20*S);
+      ctx.fillStyle = '#333';
+      ctx.font      = `${5 * S}px IBM Plex Mono, monospace`;
+      ctx.fillText(s.label, x, baseY + 32*S);
+    });
+
+    // Watermark
+    ctx.fillStyle = '#1e1e1e';
+    ctx.font      = `${4.5 * S}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText('ORG · odonata-research-group.github.io/ORG', W - PAD_RIGHT, H - 4*S);
+  }
+
+  return { weeksLived, remaining, pct, currentAge };
+}
+
+// ── Draw to screen ────────────────────────────────────────────────────────────
+function drawCalendar() {
+  if (!dobInput.value) return;
+
+  const stats = renderToCanvas(canvas, 1, false);
+
+  document.getElementById('stat-lived').textContent     = stats.weeksLived.toLocaleString();
+  document.getElementById('stat-remaining').textContent = stats.remaining.toLocaleString();
+  document.getElementById('stat-pct').textContent       = stats.pct + '%';
+  document.getElementById('stat-age').textContent       = stats.currentAge.toFixed(1);
+  document.getElementById('stats-strip').classList.add('visible');
+
+  emptyState.style.display = 'none';
+  canvas.style.display     = 'block';
+  btnDL.style.display      = 'block';
+}
+
+// ── Download hi-res with stats ────────────────────────────────────────────────
+btnDL.addEventListener('click', () => {
+  if (!dobInput.value) return;
+  const hires = document.createElement('canvas');
+  renderToCanvas(hires, 3, true);
   const a = document.createElement('a');
   a.download = 'ORG-life-calendar.png';
   a.href = hires.toDataURL('image/png');
