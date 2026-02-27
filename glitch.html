@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — Glitch Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    flex: 1;
+  }
+
+  /* ── CANVAS AREA ─────────────────────────── */
+  .canvas-area {
+    border-right: 1px solid var(--dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    min-height: calc(100vh - 64px);
+  }
+
+  .drop-zone {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1;
+    border: 1px solid var(--mid);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone:hover { border-color: var(--bright); }
+  .drop-zone.drag-over { border-color: var(--white); }
+  .drop-zone.has-image { border-color: transparent; cursor: default; }
+
+  .drop-icon { font-size: 24px; color: var(--mid); }
+  .drop-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid); text-align: center; line-height: 2; }
+  .drop-sub { font-size: 9px; letter-spacing: 0.15em; color: #222; text-transform: uppercase; }
+
+  #preview-img  { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; }
+  #output-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; }
+  #file-input { display: none; }
+
+  /* Re-upload hint */
+  .reupload {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #2a2a2a;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .reupload:hover { color: var(--bright); }
+
+  /* ── CONTROLS ────────────────────────────── */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 28px;
+    overflow-y: auto;
+  }
+
+  .controls-title {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--bright);
+    margin-bottom: 24px;
+  }
+
+  .control-group {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--dim);
+  }
+
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .control-name {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .control-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .control-value {
+    font-size: 9px;
+    color: var(--bright);
+    min-width: 24px;
+    text-align: right;
+  }
+
+  /* on/off toggle */
+  .toggle-switch {
+    width: 28px;
+    height: 14px;
+    background: var(--mid);
+    border-radius: 7px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--white); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 10px; height: 10px;
+    background: var(--black);
+    border-radius: 50%;
+    transition: transform 0.15s;
+  }
+  .toggle-switch.on::after { transform: translateX(14px); }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--mid);
+    outline: none;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 9px; height: 9px;
+    background: var(--white);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.5); }
+  input[type="range"]:disabled { opacity: 0.2; cursor: not-allowed; }
+
+  .control-desc {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #333;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ── ACTIONS ─────────────────────────────── */
+  .actions {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .status {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--bright);
+    text-align: center;
+    padding: 6px 0;
+    min-height: 24px;
+  }
+
+  .progress-wrap { height: 1px; background: var(--dim); margin: 2px 0 6px; overflow: hidden; opacity: 0; transition: opacity 0.2s; }
+  .progress-wrap.visible { opacity: 1; }
+  .progress-fill { height: 100%; background: var(--white); width: 0%; transition: width 0.12s; }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-primary:disabled { opacity: 0.18; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--white);
+    border: 1px solid var(--mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    display: none;
+  }
+  .btn-secondary:hover { border-color: var(--white); }
+
+  .export-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    display: none;
+  }
+
+  .gif-note {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #333;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 4px 0;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="canvas-area">
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-icon">+</div>
+      <div class="drop-label">Drop image here<br>or click to upload</div>
+      <div class="drop-sub">JPG · PNG · WEBP</div>
+      <img id="preview-img" alt="">
+      <canvas id="output-canvas"></canvas>
+      <span class="reupload" id="reupload" style="display:none">↺ New image</span>
+    </div>
+    <input type="file" id="file-input" accept="image/*">
+  </div>
+
+  <div class="controls">
+    <div class="controls-title">Effects</div>
+
+    <!-- RGB SHIFT -->
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name">RGB Shift</span>
+        <div class="control-right">
+          <span class="control-value" id="val-rgb">20</span>
+          <div class="toggle-switch on" id="tog-rgb" data-effect="rgb"></div>
+        </div>
+      </div>
+      <input type="range" id="sl-rgb" min="0" max="80" value="20">
+      <div class="control-desc">Separates colour channels horizontally</div>
+    </div>
+
+    <!-- SCANLINES -->
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name">Scanline Tears</span>
+        <div class="control-right">
+          <span class="control-value" id="val-scan">30</span>
+          <div class="toggle-switch on" id="tog-scan" data-effect="scan"></div>
+        </div>
+      </div>
+      <input type="range" id="sl-scan" min="0" max="100" value="30">
+      <div class="control-desc">Horizontal slice displacement</div>
+    </div>
+
+    <!-- PIXEL SORT -->
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name">Pixel Sort</span>
+        <div class="control-right">
+          <span class="control-value" id="val-sort">40</span>
+          <div class="toggle-switch on" id="tog-sort" data-effect="sort"></div>
+        </div>
+      </div>
+      <input type="range" id="sl-sort" min="0" max="100" value="40">
+      <div class="control-desc">Sorts pixels by brightness in columns</div>
+    </div>
+
+    <!-- BLOCK CORRUPT -->
+    <div class="control-group">
+      <div class="control-header">
+        <span class="control-name">Block Corrupt</span>
+        <div class="control-right">
+          <span class="control-value" id="val-block">25</span>
+          <div class="toggle-switch on" id="tog-block" data-effect="block"></div>
+        </div>
+      </div>
+      <input type="range" id="sl-block" min="0" max="100" value="25">
+      <div class="control-desc">Random rectangular data corruption</div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+      <div class="status" id="status">Upload an image to begin</div>
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <button class="btn-primary" id="btn-generate" disabled>Glitch</button>
+      <div class="export-row" id="export-row">
+        <button class="btn-secondary" id="btn-png" style="display:block">↓ PNG</button>
+        <button class="btn-secondary" id="btn-gif" style="display:block">↓ GIF</button>
+      </div>
+      <div class="gif-note" id="gif-note">GIF: 12 frames · ~2s loop</div>
+    </div>
+  </div>
+</div>
+
+<!-- gif.js for animated GIF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script src="nav.js"></script>
+<script>
+let srcImage = null;
+let lastImageData = null; // store original pixels
+const effects = { rgb: true, scan: true, sort: true, block: true };
+
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+const preview    = document.getElementById('preview-img');
+const canvas     = document.getElementById('output-canvas');
+const btnGenerate = document.getElementById('btn-generate');
+const statusEl   = document.getElementById('status');
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+dropZone.addEventListener('click', e => {
+  if (e.target.id === 'reupload' || srcImage) return;
+  fileInput.click();
+});
+document.getElementById('reupload').addEventListener('click', () => {
+  srcImage = null; lastImageData = null;
+  preview.style.display = 'none';
+  canvas.style.display = 'none';
+  dropZone.classList.remove('has-image');
+  dropZone.querySelector('.drop-icon').style.display = '';
+  dropZone.querySelector('.drop-label').style.display = '';
+  dropZone.querySelector('.drop-sub').style.display = '';
+  document.getElementById('reupload').style.display = 'none';
+  document.getElementById('export-row').style.display = 'none';
+  document.getElementById('gif-note').style.display = 'none';
+  btnGenerate.disabled = true;
+  setStatus('Upload an image to begin');
+  fileInput.click();
+});
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      srcImage = img;
+      // Cache original pixels
+      const W = Math.min(img.width, 800);
+      const H = Math.round(img.height * (W / img.width));
+      const off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      off.getContext('2d').drawImage(img, 0, 0, W, H);
+      lastImageData = off.getContext('2d').getImageData(0, 0, W, H);
+
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      canvas.style.display = 'none';
+      dropZone.classList.add('has-image');
+      dropZone.querySelector('.drop-icon').style.display = 'none';
+      dropZone.querySelector('.drop-label').style.display = 'none';
+      dropZone.querySelector('.drop-sub').style.display = 'none';
+      document.getElementById('reupload').style.display = 'block';
+      btnGenerate.disabled = false;
+      document.getElementById('export-row').style.display = 'none';
+      document.getElementById('gif-note').style.display = 'none';
+      setStatus('Ready — hit Glitch');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Sliders + toggles ─────────────────────────────────────────────────────────
+['rgb','scan','sort','block'].forEach(id => {
+  const sl = document.getElementById('sl-' + id);
+  const vl = document.getElementById('val-' + id);
+  sl.addEventListener('input', () => { vl.textContent = sl.value; });
+
+  const tog = document.getElementById('tog-' + id);
+  tog.addEventListener('click', () => {
+    effects[id] = !effects[id];
+    tog.classList.toggle('on', effects[id]);
+    sl.disabled = !effects[id];
+  });
+});
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+btnGenerate.addEventListener('click', () => glitchAndShow(false));
+
+async function glitchAndShow(quiet) {
+  if (!srcImage) return;
+  if (!quiet) {
+    btnGenerate.disabled = true;
+    setProgress(0, true);
+    setStatus('Corrupting...');
+    await tick();
+  }
+
+  const W = lastImageData.width;
+  const H = lastImageData.height;
+
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  applyGlitch(ctx, W, H, lastImageData);
+
+  if (!quiet) {
+    setProgress(100);
+    preview.style.display = 'none';
+    canvas.style.display = 'block';
+    btnGenerate.disabled = false;
+    document.getElementById('export-row').style.display = 'grid';
+    document.getElementById('gif-note').style.display = 'block';
+    setStatus('Done');
+    setTimeout(() => setProgress(0, false), 500);
+  }
+}
+
+// ── Core glitch engine ────────────────────────────────────────────────────────
+function applyGlitch(ctx, W, H, srcData, seed) {
+  // Work on a fresh copy each time
+  const data = new Uint8ClampedArray(srcData.data);
+  const rng = makeRng(seed !== undefined ? seed : Math.random() * 99999 | 0);
+
+  const rgbAmt   = effects.rgb   ? parseInt(document.getElementById('sl-rgb').value)   : 0;
+  const scanAmt  = effects.scan  ? parseInt(document.getElementById('sl-scan').value)  : 0;
+  const sortAmt  = effects.sort  ? parseInt(document.getElementById('sl-sort').value)  : 0;
+  const blockAmt = effects.block ? parseInt(document.getElementById('sl-block').value) : 0;
+
+  // 1. SCANLINE TEARS — displace horizontal slices
+  if (scanAmt > 0) {
+    const numTears = Math.floor(scanAmt * 0.3) + 2;
+    const maxShift = Math.floor(scanAmt * 2.5);
+    for (let t = 0; t < numTears; t++) {
+      const y = rng() * H | 0;
+      const h = (rng() * 20 + 2) | 0;
+      const shift = ((rng() * maxShift * 2) - maxShift) | 0;
+      for (let row = y; row < Math.min(y + h, H); row++) {
+        const tmp = new Uint8ClampedArray(W * 4);
+        for (let x = 0; x < W; x++) {
+          const srcX = ((x - shift) % W + W) % W;
+          const si = (row * W + srcX) * 4;
+          const di = x * 4;
+          tmp[di]   = data[si];
+          tmp[di+1] = data[si+1];
+          tmp[di+2] = data[si+2];
+          tmp[di+3] = data[si+3];
+        }
+        for (let x = 0; x < W; x++) {
+          const i = (row * W + x) * 4;
+          data[i]   = tmp[x*4];
+          data[i+1] = tmp[x*4+1];
+          data[i+2] = tmp[x*4+2];
+          data[i+3] = tmp[x*4+3];
+        }
+      }
+    }
+  }
+
+  // 2. PIXEL SORT — sort columns by brightness above threshold
+  if (sortAmt > 0) {
+    const threshold = 255 - sortAmt * 2;
+    const numCols = Math.floor(W * sortAmt / 100 * 0.6) + 1;
+    for (let c = 0; c < numCols; c++) {
+      const x = rng() * W | 0;
+      let runStart = -1;
+      for (let y = 0; y <= H; y++) {
+        const lum = y < H ? getLum(data, W, x, y) : -1;
+        const inRun = lum > threshold;
+        if (inRun && runStart === -1) runStart = y;
+        if (!inRun && runStart !== -1) {
+          // Sort this run by brightness
+          const run = [];
+          for (let r = runStart; r < y; r++) {
+            const i = (r * W + x) * 4;
+            run.push({ l: getLum(data, W, x, r), r: data[i], g: data[i+1], b: data[i+2] });
+          }
+          run.sort((a, b) => a.l - b.l);
+          for (let r = runStart; r < y; r++) {
+            const i = (r * W + x) * 4;
+            data[i]   = run[r - runStart].r;
+            data[i+1] = run[r - runStart].g;
+            data[i+2] = run[r - runStart].b;
+          }
+          runStart = -1;
+        }
+      }
+    }
+  }
+
+  // 3. BLOCK CORRUPT — rectangular chunks replaced with offset data
+  if (blockAmt > 0) {
+    const numBlocks = Math.floor(blockAmt * 0.15) + 1;
+    for (let b = 0; b < numBlocks; b++) {
+      const bx = rng() * W | 0;
+      const by = rng() * H | 0;
+      const bw = (rng() * W * 0.3 + 10) | 0;
+      const bh = (rng() * 20 + 4) | 0;
+      const offX = ((rng() * blockAmt * 2) - blockAmt) | 0;
+      for (let row = by; row < Math.min(by + bh, H); row++) {
+        for (let col = bx; col < Math.min(bx + bw, W); col++) {
+          const srcCol = Math.max(0, Math.min(W-1, col + offX));
+          const si = (row * W + srcCol) * 4;
+          const di = (row * W + col) * 4;
+          data[di]   = data[si];
+          data[di+1] = data[si+1];
+          data[di+2] = data[si+2];
+        }
+      }
+    }
+  }
+
+  // Put base data on canvas
+  const imgOut = new ImageData(data, W, H);
+  ctx.putImageData(imgOut, 0, 0);
+
+  // 4. RGB SHIFT — draw R, G, B channels offset (on top via composite)
+  if (rgbAmt > 0) {
+    const shift = Math.floor(rgbAmt * 0.4) + 1;
+
+    // Red channel — shift left
+    const rCanvas = document.createElement('canvas');
+    rCanvas.width = W; rCanvas.height = H;
+    const rCtx = rCanvas.getContext('2d');
+    rCtx.putImageData(imgOut, 0, 0);
+    const rData = rCtx.getImageData(0, 0, W, H);
+    for (let i = 0; i < rData.data.length; i += 4) {
+      rData.data[i+1] = 0; rData.data[i+2] = 0; // kill G and B
+    }
+    const rOut = new ImageData(rData.data, W, H);
+    ctx.globalCompositeOperation = 'screen';
+    const rTmp = document.createElement('canvas');
+    rTmp.width = W; rTmp.height = H;
+    rTmp.getContext('2d').putImageData(rOut, 0, 0);
+    ctx.drawImage(rTmp, -shift, 0);
+
+    // Blue channel — shift right
+    const bData = new ImageData(new Uint8ClampedArray(imgOut.data), W, H);
+    for (let i = 0; i < bData.data.length; i += 4) {
+      bData.data[i] = 0; bData.data[i+1] = 0; // kill R and G
+    }
+    const bTmp = document.createElement('canvas');
+    bTmp.width = W; bTmp.height = H;
+    bTmp.getContext('2d').putImageData(bData, 0, 0);
+    ctx.drawImage(bTmp, shift, 0);
+
+    ctx.globalCompositeOperation = 'source-over';
+  }
+}
+
+// ── Export PNG ────────────────────────────────────────────────────────────────
+document.getElementById('btn-png').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.download = 'ORG-glitch.png';
+  a.href = canvas.toDataURL();
+  a.click();
+});
+
+// ── Export GIF ────────────────────────────────────────────────────────────────
+document.getElementById('btn-gif').addEventListener('click', async () => {
+  if (!srcImage) return;
+  const btn = document.getElementById('btn-gif');
+  btn.textContent = 'Encoding...';
+  btn.disabled = true;
+  setStatus('Building 12 frames...');
+  setProgress(0, true);
+  await tick();
+
+  const W = lastImageData.width;
+  const H = lastImageData.height;
+  const FRAMES = 12;
+
+  const gif = new GIF({
+    workers: 2,
+    quality: 8,
+    width: W,
+    height: H,
+    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+  });
+
+  const frameCanvas = document.createElement('canvas');
+  frameCanvas.width = W; frameCanvas.height = H;
+  const fCtx = frameCanvas.getContext('2d');
+
+  for (let f = 0; f < FRAMES; f++) {
+    fCtx.clearRect(0, 0, W, H);
+    applyGlitch(fCtx, W, H, lastImageData, f * 12345);
+    gif.addFrame(fCtx, { copy: true, delay: 80 });
+    setProgress((f / FRAMES) * 70);
+    await tick();
+  }
+
+  gif.on('progress', p => setProgress(70 + p * 30));
+  gif.on('finished', blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = 'ORG-glitch.gif';
+    a.href = url;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    btn.textContent = '↓ GIF';
+    btn.disabled = false;
+    setStatus('Done');
+    setProgress(0, false);
+  });
+
+  gif.render();
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function getLum(data, W, x, y) {
+  const i = (y * W + x) * 4;
+  return data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114;
+}
+
+function makeRng(seed) {
+  let s = seed | 0;
+  return () => {
+    s = (s ^ (s << 13)) | 0;
+    s = (s ^ (s >> 7)) | 0;
+    s = (s ^ (s << 17)) | 0;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+function setStatus(msg) { statusEl.textContent = msg; }
+function tick() { return new Promise(r => setTimeout(r, 16)); }
+function setProgress(pct, show) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  if (show !== undefined) document.getElementById('progress-wrap').classList.toggle('visible', show);
+}
+</script>
+</body>
+</html>
