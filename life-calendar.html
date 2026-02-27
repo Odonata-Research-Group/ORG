@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — Life Calendar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    flex: 1;
+  }
+
+  /* ── CANVAS AREA ─────────────────────────── */
+  .canvas-area {
+    border-right: 1px solid var(--dim);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    min-height: calc(100vh - 64px);
+  }
+
+  #calendar-canvas {
+    max-width: 100%;
+    max-height: calc(100vh - 180px);
+    display: block;
+  }
+
+  .canvas-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .canvas-empty-icon {
+    font-size: 32px;
+    color: var(--mid);
+  }
+
+  .canvas-empty-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-align: center;
+    line-height: 2;
+  }
+
+  /* Stats strip below canvas */
+  .stats-strip {
+    display: flex;
+    gap: 40px;
+    margin-top: 24px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .stats-strip.visible { opacity: 1; }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--bright);
+  }
+
+  /* ── CONTROLS ────────────────────────────── */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    padding: 32px 24px;
+  }
+
+  .controls-title {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--bright);
+    margin-bottom: 28px;
+  }
+
+  .control-group {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--dim);
+  }
+
+  .control-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .control-value {
+    font-size: 9px;
+    color: var(--bright);
+  }
+
+  /* Date input */
+  input[type="date"] {
+    background: var(--dim);
+    border: 1px solid var(--mid);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 8px 10px;
+    width: 100%;
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    color-scheme: dark;
+  }
+  input[type="date"]:focus { border-color: var(--bright); }
+
+  /* Range slider */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--mid);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 9px; height: 9px;
+    background: var(--white);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.5); }
+
+  /* Colour accent swatches */
+  .swatch-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.12s, transform 0.12s;
+  }
+  .swatch:hover { transform: scale(1.2); }
+  .swatch.active { border-color: var(--white); }
+  .swatch.none {
+    background: var(--white) !important;
+    position: relative;
+  }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .toggle-name {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .toggle-switch {
+    width: 28px; height: 14px;
+    background: var(--mid);
+    border-radius: 7px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--white); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 10px; height: 10px;
+    background: var(--black);
+    border-radius: 50%;
+    transition: transform 0.15s;
+  }
+  .toggle-switch.on::after { transform: translateX(14px); }
+
+  /* ── ACTIONS ─────────────────────────────── */
+  .actions {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-primary:disabled { opacity: 0.18; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--white);
+    border: 1px solid var(--mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    display: none;
+  }
+  .btn-secondary:hover { border-color: var(--white); }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- CANVAS -->
+  <div class="canvas-area">
+    <div class="canvas-empty" id="canvas-empty">
+      <div class="canvas-empty-icon">◆</div>
+      <div class="canvas-empty-label">Enter your date of birth<br>to generate your calendar</div>
+    </div>
+    <canvas id="calendar-canvas" style="display:none"></canvas>
+    <div class="stats-strip" id="stats-strip">
+      <div class="stat">
+        <span class="stat-value" id="stat-lived">—</span>
+        <span class="stat-label">Weeks lived</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-remaining">—</span>
+        <span class="stat-label">Weeks remaining</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-pct">—</span>
+        <span class="stat-label">Life elapsed</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-age">—</span>
+        <span class="stat-label">Current age</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="controls-title">Parameters</div>
+
+    <div class="control-group">
+      <label class="control-label" for="dob">Date of Birth</label>
+      <input type="date" id="dob" max="2010-01-01">
+    </div>
+
+    <div class="control-group">
+      <div class="control-row">
+        <span class="control-label" style="margin:0">Life Expectancy</span>
+        <span class="control-value" id="val-life">90 yrs</span>
+      </div>
+      <input type="range" id="sl-life" min="60" max="120" value="90">
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Accent Colour</span>
+      <div class="swatch-row" id="swatches">
+        <div class="swatch active" data-color="none" style="background:#eeeae2" title="White"></div>
+        <div class="swatch" data-color="#ff3020" style="background:#ff3020" title="Red"></div>
+        <div class="swatch" data-color="#ffdd00" style="background:#ffdd00" title="Yellow"></div>
+        <div class="swatch" data-color="#00ff88" style="background:#00ff88" title="Green"></div>
+        <div class="swatch" data-color="#00aaff" style="background:#00aaff" title="Blue"></div>
+        <div class="swatch" data-color="#ff44cc" style="background:#ff44cc" title="Pink"></div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="toggle-row">
+        <span class="toggle-name">Decade markers</span>
+        <div class="toggle-switch on" id="tog-decades"></div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="toggle-row">
+        <span class="toggle-name">Current year marker</span>
+        <div class="toggle-switch on" id="tog-current"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btn-generate" disabled>Generate</button>
+      <button class="btn-secondary" id="btn-download">↓ Download PNG</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="nav.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let accentColor = 'none';
+let showDecades = true;
+let showCurrent = true;
+
+// ── DOB input ─────────────────────────────────────────────────────────────────
+const dobInput   = document.getElementById('dob');
+const btnGen     = document.getElementById('btn-generate');
+const btnDL      = document.getElementById('btn-download');
+const canvas     = document.getElementById('calendar-canvas');
+const emptyState = document.getElementById('canvas-empty');
+
+dobInput.addEventListener('input', () => {
+  btnGen.disabled = !dobInput.value;
+});
+
+// Auto-generate on any control change if DOB is set
+function autoGenerate() {
+  if (dobInput.value) drawCalendar();
+}
+
+// ── Life expectancy slider ────────────────────────────────────────────────────
+const slLife = document.getElementById('sl-life');
+slLife.addEventListener('input', () => {
+  document.getElementById('val-life').textContent = slLife.value + ' yrs';
+  autoGenerate();
+});
+
+// ── Colour swatches ───────────────────────────────────────────────────────────
+document.querySelectorAll('.swatch').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+    accentColor = s.dataset.color;
+    autoGenerate();
+  });
+});
+
+// ── Toggles ───────────────────────────────────────────────────────────────────
+document.getElementById('tog-decades').addEventListener('click', function() {
+  showDecades = !showDecades;
+  this.classList.toggle('on', showDecades);
+  autoGenerate();
+});
+document.getElementById('tog-current').addEventListener('click', function() {
+  showCurrent = !showCurrent;
+  this.classList.toggle('on', showCurrent);
+  autoGenerate();
+});
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+btnGen.addEventListener('click', drawCalendar);
+
+function drawCalendar() {
+  if (!dobInput.value) return;
+
+  const dob         = new Date(dobInput.value);
+  const lifeYears   = parseInt(slLife.value);
+  const today       = new Date();
+  const totalWeeks  = lifeYears * 52;
+
+  // Week number helpers
+  const msPerWeek   = 7 * 24 * 60 * 60 * 1000;
+  const weeksLived  = Math.floor((today - dob) / msPerWeek);
+  const currentAge  = (today - dob) / (365.25 * 24 * 60 * 60 * 1000);
+  const currentYear = Math.floor(currentAge);
+
+  // Stats
+  const remaining = Math.max(0, totalWeeks - weeksLived);
+  const pct       = Math.min(100, (weeksLived / totalWeeks * 100)).toFixed(1);
+
+  document.getElementById('stat-lived').textContent     = weeksLived.toLocaleString();
+  document.getElementById('stat-remaining').textContent = remaining.toLocaleString();
+  document.getElementById('stat-pct').textContent       = pct + '%';
+  document.getElementById('stat-age').textContent       = currentAge.toFixed(1);
+  document.getElementById('stats-strip').classList.add('visible');
+
+  // ── Layout ────────────────────────────────────────────────────────────────
+  const COLS       = 52;   // weeks across
+  const ROWS       = lifeYears; // years down
+  const CELL       = 8;    // cell size px
+  const GAP        = 2;    // gap between cells
+  const STEP       = CELL + GAP;
+  const PAD_LEFT   = 36;   // space for decade labels
+  const PAD_TOP    = 16;
+  const PAD_BOTTOM = 24;
+  const PAD_RIGHT  = 16;
+
+  const W = PAD_LEFT + COLS * STEP - GAP + PAD_RIGHT;
+  const H = PAD_TOP  + ROWS * STEP - GAP + PAD_BOTTOM;
+
+  canvas.width  = W;
+  canvas.height = H;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, W, H);
+
+  const fillLived   = accentColor === 'none' ? '#eeeae2' : accentColor;
+  const fillFuture  = '#1e1e1e';
+  const strokeColor = '#2a2a2a';
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const weekIndex = row * 52 + col;
+      const x = PAD_LEFT + col * STEP;
+      const y = PAD_TOP  + row * STEP;
+
+      const isLived   = weekIndex < weeksLived;
+      const isCurrent = weekIndex === weeksLived;
+
+      ctx.beginPath();
+      ctx.rect(x, y, CELL, CELL);
+
+      if (isCurrent && showCurrent) {
+        // Pulsing current week — bright accent or white outline
+        ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
+        ctx.fill();
+        // Inner highlight
+        ctx.fillStyle = '#080808';
+        ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
+      } else if (isLived) {
+        ctx.fillStyle = fillLived;
+        ctx.fill();
+      } else {
+        ctx.fillStyle = fillFuture;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+
+    // Decade markers on left
+    if (row % 10 === 0 && showDecades) {
+      ctx.fillStyle = row === currentYear ? (accentColor === 'none' ? '#eeeae2' : accentColor) : '#444';
+      ctx.font = '7px IBM Plex Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(row === 0 ? 'born' : row + '', PAD_LEFT - 6, PAD_TOP + row * STEP + CELL - 1);
+    }
+  }
+
+  // Current year tick on left margin
+  if (showCurrent) {
+    const tickY = PAD_TOP + currentYear * STEP + CELL / 2;
+    ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
+    ctx.font      = '7px IBM Plex Mono, monospace';
+    ctx.textAlign = 'right';
+    if (currentYear % 10 !== 0) { // don't double-draw on decade
+      ctx.fillText(currentYear + '', PAD_LEFT - 6, tickY + 3);
+    }
+    // Arrow marker
+    ctx.beginPath();
+    ctx.moveTo(PAD_LEFT - 3, tickY - 3);
+    ctx.lineTo(PAD_LEFT - 3, tickY + 3);
+    ctx.lineTo(PAD_LEFT,     tickY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Week column labels (10, 20, 30, 40, 50)
+  ctx.fillStyle  = '#333';
+  ctx.font       = '7px IBM Plex Mono, monospace';
+  ctx.textAlign  = 'center';
+  [10, 20, 30, 40, 50].forEach(w => {
+    const x = PAD_LEFT + (w - 1) * STEP + CELL / 2;
+    ctx.fillText(w, x, H - 8);
+  });
+
+  // Show canvas, hide empty state
+  emptyState.style.display = 'none';
+  canvas.style.display = 'block';
+  btnDL.style.display = 'block';
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+btnDL.addEventListener('click', () => {
+  // Render at 3× for high-res download
+  if (!dobInput.value) return;
+
+  const dob         = new Date(dobInput.value);
+  const lifeYears   = parseInt(slLife.value);
+  const today       = new Date();
+  const msPerWeek   = 7 * 24 * 60 * 60 * 1000;
+  const weeksLived  = Math.floor((today - dob) / msPerWeek);
+  const currentAge  = (today - dob) / (365.25 * 24 * 60 * 60 * 1000);
+  const currentYear = Math.floor(currentAge);
+
+  const SCALE      = 3;
+  const COLS       = 52;
+  const ROWS       = lifeYears;
+  const CELL       = 8 * SCALE;
+  const GAP        = 2 * SCALE;
+  const STEP       = CELL + GAP;
+  const PAD_LEFT   = 36 * SCALE;
+  const PAD_TOP    = 16 * SCALE;
+  const PAD_BOTTOM = 24 * SCALE;
+  const PAD_RIGHT  = 16 * SCALE;
+  const W          = PAD_LEFT + COLS * STEP - GAP + PAD_RIGHT;
+  const H          = PAD_TOP  + ROWS * STEP - GAP + PAD_BOTTOM;
+
+  const hires = document.createElement('canvas');
+  hires.width = W; hires.height = H;
+  const ctx = hires.getContext('2d');
+
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, W, H);
+
+  const fillLived  = accentColor === 'none' ? '#eeeae2' : accentColor;
+  const fillFuture = '#1e1e1e';
+  const strokeCol  = '#2a2a2a';
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const weekIndex = row * 52 + col;
+      const x = PAD_LEFT + col * STEP;
+      const y = PAD_TOP  + row * STEP;
+      const isLived   = weekIndex < weeksLived;
+      const isCurrent = weekIndex === weeksLived;
+
+      ctx.beginPath();
+      ctx.rect(x, y, CELL, CELL);
+
+      if (isCurrent && showCurrent) {
+        ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
+        ctx.fill();
+        ctx.fillStyle = '#080808';
+        ctx.fillRect(x + SCALE*2, y + SCALE*2, CELL - SCALE*4, CELL - SCALE*4);
+      } else if (isLived) {
+        ctx.fillStyle = fillLived;
+        ctx.fill();
+      } else {
+        ctx.fillStyle = fillFuture;
+        ctx.fill();
+        ctx.strokeStyle = strokeCol;
+        ctx.lineWidth = 0.5 * SCALE;
+        ctx.stroke();
+      }
+    }
+
+    if (row % 10 === 0 && showDecades) {
+      ctx.fillStyle  = row === currentYear ? (accentColor === 'none' ? '#eeeae2' : accentColor) : '#444';
+      ctx.font       = `${7 * SCALE}px IBM Plex Mono, monospace`;
+      ctx.textAlign  = 'right';
+      ctx.fillText(row === 0 ? 'born' : row + '', PAD_LEFT - 6 * SCALE, PAD_TOP + row * STEP + CELL - SCALE);
+    }
+  }
+
+  if (showCurrent) {
+    const tickY = PAD_TOP + currentYear * STEP + CELL / 2;
+    ctx.fillStyle = accentColor === 'none' ? '#eeeae2' : accentColor;
+    ctx.font      = `${7 * SCALE}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'right';
+    if (currentYear % 10 !== 0) ctx.fillText(currentYear + '', PAD_LEFT - 6 * SCALE, tickY + 3 * SCALE);
+    ctx.beginPath();
+    ctx.moveTo(PAD_LEFT - 3*SCALE, tickY - 3*SCALE);
+    ctx.lineTo(PAD_LEFT - 3*SCALE, tickY + 3*SCALE);
+    ctx.lineTo(PAD_LEFT,           tickY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.fillStyle = '#333';
+  ctx.font = `${7 * SCALE}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'center';
+  [10, 20, 30, 40, 50].forEach(w => {
+    const x = PAD_LEFT + (w - 1) * STEP + CELL / 2;
+    ctx.fillText(w, x, H - 8 * SCALE);
+  });
+
+  const a = document.createElement('a');
+  a.download = 'ORG-life-calendar.png';
+  a.href = hires.toDataURL('image/png');
+  a.click();
+});
+</script>
+</body>
+</html>

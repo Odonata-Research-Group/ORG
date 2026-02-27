@@ -4,9 +4,10 @@
 
 const ORG_NAV = {
   experiments: [
-    { num: '001', name: 'Visual Glossary',     file: 'org-glossary.html' },
+    { num: '001', name: 'Visual Glossary',     file: 'org-glossary-v3.html' },
     { num: '002', name: 'Low Poly Generator',  file: 'low-poly.html'        },
     { num: '003', name: 'Glitch Generator',    file: 'glitch.html'              },
+    { num: '004', name: 'Life Calendar',       file: 'life-calendar.html'       },
   ],
 
   links: [
