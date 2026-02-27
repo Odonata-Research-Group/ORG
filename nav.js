@@ -58,7 +58,7 @@ const ORG_NAV = {
         text-decoration: none;
       }
       #org-nav .nav-logo img {
-        height: 36px;
+        height: 28px;
         width: auto;
         display: block;
         mix-blend-mode: screen;
@@ -124,7 +124,7 @@ const ORG_NAV = {
       #org-nav .nav-dots {
         background: none;
         border: none;
-        color: #444;
+        color: #eeeae2;
         font-family: 'IBM Plex Mono', monospace;
         font-size: 16px;
         letter-spacing: 0.15em;
