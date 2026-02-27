@@ -6,30 +6,32 @@
 <title>ORG — Odonata Research Group</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,700;1,300&family=IBM+Plex+Sans:wght@300;400;700;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,700;1,300&display=swap');
 
   :root {
     --black: #080808;
     --white: #eeeae2;
-    --mid: #555;
-    --dim: #222;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
-    width: 100%; height: 100%;
     background: var(--black);
     color: var(--white);
     font-family: 'IBM Plex Mono', monospace;
-    overflow: hidden;
+    min-height: 100vh;
   }
 
+  /* ── BACKGROUND ANIMATION ────────────────── */
   #bg-canvas {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 0;
+    opacity: 0.4;
   }
 
   .vignette {
@@ -37,167 +39,222 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     background: radial-gradient(ellipse at center,
-      transparent 20%,
-      rgba(8,8,8,0.5) 65%,
-      rgba(8,8,8,0.88) 100%);
+      transparent 10%,
+      rgba(8,8,8,0.6) 60%,
+      rgba(8,8,8,0.95) 100%);
     z-index: 1;
     pointer-events: none;
   }
 
-  .content {
-    position: fixed;
-    top: 64px; left: 0;
-    width: 100%;
-    height: calc(100% - 64px);
+  /* ── PAGE ────────────────────────────────── */
+  .page {
+    position: relative;
     z-index: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 48px 56px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 56px 80px;
   }
 
-  /* ── TOP ── */
-  .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  /* ── HERO ────────────────────────────────── */
+  .hero {
+    padding: 72px 0 64px;
+    border-bottom: 1px solid var(--dim);
+    margin-bottom: 56px;
+    text-align: center;
   }
 
-  /* nav.js handles header styles */
-
-  /* ── MIDDLE ── */
-  .middle {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .org-full {
-    font-size: 10px;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-
-  .tagline {
+  .hero-headline {
     font-family: 'IBM Plex Sans', sans-serif;
     font-weight: 300;
-    font-size: 42px;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
     color: var(--white);
-    line-height: 1.4;
-    max-width: 780px;
-    letter-spacing: -0.02em;
+    margin-bottom: 20px;
   }
 
-  .tagline em {
-    color: var(--white);
-    font-style: normal;
+  .hero-sub {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    color: var(--bright);
+    line-height: 1.7;
   }
 
-  /* ── BOTTOM ── */
-  .bottom {
+  /* ── CASE STUDIES HEADER ─────────────────── */
+  .section-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 48px;
+    align-items: baseline;
+    margin-bottom: 32px;
   }
 
-  /* ── EXPERIMENTS ── */
-  .experiments { flex: 1; max-width: 580px; }
-
-  .experiments-label {
+  .section-label {
     font-size: 9px;
     letter-spacing: 0.32em;
     text-transform: uppercase;
     color: var(--white);
-    margin-bottom: 16px;
   }
 
-  .experiment-link {
-    display: grid;
-    grid-template-columns: 32px 1fr auto auto;
-    align-items: center;
-    gap: 20px;
-    text-decoration: none;
-    padding: 12px 0;
-    border-top: 1px solid #2a2a2a;
-    transition: border-color 0.2s;
-  }
-
-  .experiment-link:last-child { border-bottom: 1px solid #2a2a2a; }
-  .experiment-link.active:hover { border-color: #666; }
-  .experiment-link.active:hover .exp-name { opacity: 0.6; }
-  .experiment-link.active:hover .exp-arrow { transform: translateX(4px); }
-
-  .exp-num {
+  .section-count {
     font-size: 9px;
-    letter-spacing: 0.12em;
-    color: var(--white);
+    letter-spacing: 0.15em;
+    color: var(--bright);
   }
 
-  .exp-name {
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+  /* ── GRID ────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .card {
+    display: block;
+    text-decoration: none;
     color: var(--white);
+    background: var(--black);
+    border: 1px solid var(--dim);
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover { border-color: var(--bright); }
+  .card:hover .card-arrow { transform: translateX(4px); opacity: 1; }
+  .card:hover .card-thumb { opacity: 0.85; }
+
+  /* Thumbnail */
+  .card-thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--dim);
+    overflow: hidden;
+    position: relative;
     transition: opacity 0.2s;
   }
 
-  .experiment-link.inactive .exp-name { opacity: 0.25; }
-
-  .exp-cat {
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    color: var(--white);
-    text-align: right;
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(20%);
   }
 
-  .experiment-link.inactive .exp-cat { opacity: 0.2; }
-
-  .exp-arrow {
-    font-size: 12px;
-    color: var(--white);
-    transition: color 0.2s, transform 0.2s;
+  /* Placeholder canvas for when no image */
+  .card-thumb canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 
-  .experiment-link.inactive .exp-arrow { opacity: 0; }
+  .card-num {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: rgba(238,234,226,0.3);
+  }
 
-  /* ── BOTTOM RIGHT ── */
-  .bottom-right {
-    text-align: right;
-    font-size: 9px;
+  /* Card body */
+  .card-body {
+    padding: 20px 20px 16px;
+    border-top: 1px solid var(--dim);
+  }
+
+  .card-title {
+    font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #252525;
-    line-height: 2.8;
-    white-space: nowrap;
+    color: var(--white);
+    margin-bottom: 8px;
   }
 
-  .bottom-right a {
-    color: #252525;
+  .card-desc {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    color: var(--bright);
+    line-height: 1.9;
+    margin-bottom: 16px;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-tag {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #333;
+  }
+
+  .card-arrow {
+    font-size: 12px;
+    color: var(--white);
+    opacity: 0.3;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  /* Coming soon card */
+  .card.soon {
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  .card.soon .card-thumb {
+    background: #0d0d0d;
+  }
+
+  /* ── FOOTER ──────────────────────────────── */
+  .footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a2a2a;
+    line-height: 2.4;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 32px;
+  }
+
+  .footer-right a {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a2a2a;
     text-decoration: none;
-    display: block;
-    transition: color 0.2s;
+    transition: color 0.15s;
   }
 
-  .bottom-right a:hover { color: #555; }
+  .footer-right a:hover { color: var(--bright); }
 
-  .pulse {
-    display: inline-block;
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: #252525;
-    margin-right: 8px;
-    vertical-align: middle;
-    animation: pulse 3s ease-in-out infinite;
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .page { padding: 32px 24px 60px; }
+    .hero-headline { font-size: 32px; }
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 0.3; background: #252525; }
-    50% { opacity: 1; background: #eeeae2; }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
   }
-
 </style>
 </head>
 <body>
@@ -205,55 +262,309 @@
 <div id="bg-canvas"></div>
 <div class="vignette"></div>
 
-<div class="content">
+<div class="page">
 
-  <div class="middle">
-    <div class="org-full">Odonata Research Group</div>
-    <div class="tagline">
-      An ongoing experiment in<br>
-      <em>creative coding,</em> <em>data stories,</em><br>
-      and <em>visual storytelling.</em>
-    </div>
+  <!-- HERO -->
+  <div class="hero">
+    <h1 class="hero-headline">Case Studies</h1>
+    <p class="hero-sub">Exploring data, generative design, and creative coding<br>as tools for visual storytelling.</p>
   </div>
 
-  <div class="bottom">
-    <div class="experiments">
-      <div class="experiments-label">Experiments</div>
+  <!-- CASE STUDIES -->
+  <div class="section-header">
+    <div class="section-label">Case Studies</div>
+    <div class="section-count">005 published</div>
+  </div>
 
-      <a class="experiment-link active" href="glossary.html">
-        <span class="exp-num">001</span>
-        <span class="exp-name">Visual Glossary</span>
-        <span class="exp-cat">001 · Reference</span>
-        <span class="exp-arrow">→</span>
-      </a>
+  <div class="grid">
 
-      <a class="experiment-link active" href="low-poly.html">
-        <span class="exp-num">002</span>
-        <span class="exp-name">Low Poly Generator</span>
-        <span class="exp-cat">002 · Tool</span>
-        <span class="exp-arrow">→</span>
-      </a>
+    <!-- 001 -->
+    <a class="card" href="glossary.html">
+      <div class="card-thumb" id="thumb-001">
+        <span class="card-num">001</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Visual Glossary</div>
+        <div class="card-desc">An interactive reference of generative techniques — dot grids, flow fields, pixel sorting, glitch, and more. Each entry is live and animated.</div>
+        <div class="card-footer">
+          <span class="card-tag">Reference</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
 
-      <a class="experiment-link active" href="glitch.html">
-        <span class="exp-num">003</span>
-        <span class="exp-name">Glitch Generator</span>
-        <span class="exp-cat">003 · Tool</span>
-        <span class="exp-arrow">→</span>
-      </a>
+    <!-- 002 -->
+    <a class="card" href="low-poly.html">
+      <div class="card-thumb" id="thumb-002">
+        <span class="card-num">002</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Low Poly Generator</div>
+        <div class="card-desc">Upload any image. Convert it to geometric art using Delaunay triangulation. Adjust triangle density, edge bias, and colour mode. Export PNG.</div>
+        <div class="card-footer">
+          <span class="card-tag">Tool · Image</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
 
-      <a class="experiment-link active" href="life-calendar.html">
-        <span class="exp-num">004</span>
-        <span class="exp-name">Life Calendar</span>
-        <span class="exp-cat">004 · Data</span>
-        <span class="exp-arrow">→</span>
-      </a>
+    <!-- 003 -->
+    <a class="card" href="glitch.html">
+      <div class="card-thumb" id="thumb-003">
+        <span class="card-num">003</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Glitch Generator</div>
+        <div class="card-desc">Apply RGB channel shift, scanline tears, pixel sorting, and block corruption to any image. Export as PNG or animated GIF.</div>
+        <div class="card-footer">
+          <span class="card-tag">Tool · Image</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
 
+    <!-- 004 -->
+    <a class="card" href="life-calendar.html">
+      <div class="card-thumb" id="thumb-004">
+        <span class="card-num">004</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Life Calendar</div>
+        <div class="card-desc">Your entire life as a grid. 52 weeks across, one year per column. Enter your date of birth and see exactly where you are. Export as hi-res PNG.</div>
+        <div class="card-footer">
+          <span class="card-tag">Data · Viz</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 005 -->
+    <a class="card" href="life-calculator.html">
+      <div class="card-thumb" id="thumb-005">
+        <span class="card-num">005</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Life Calculator</div>
+        <div class="card-desc">How do your lifestyle choices affect how long you live? Toggle risk and protective factors. Watch weeks appear and disappear in real time.</div>
+        <div class="card-footer">
+          <span class="card-tag">Data · Interactive</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 006 coming soon -->
+    <div class="card soon">
+      <div class="card-thumb">
+        <span class="card-num">006</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">——</div>
+        <div class="card-desc">Coming soon.</div>
+        <div class="card-footer">
+          <span class="card-tag">——</span>
+        </div>
+      </div>
     </div>
 
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      Odonata Research Group<br>
+      Built in public · 2026
+    </div>
+    <div class="footer-right">
+      <a href="https://instagram.com/odonataresearchgroup" target="_blank">Instagram</a>
+      <a href="https://github.com/odonata-research-group/ORG" target="_blank">GitHub</a>
+    </div>
   </div>
 
 </div>
 
+<!-- Generative placeholder thumbnails -->
+<script>
+// ── IMAGE CONFIG — edit this to swap thumbnails ──────────────────────────────
+// Add the filename here when you have a real image for a card.
+// Leave blank ('') to show the generative placeholder instead.
+const THUMBS = {
+  '001': '',               // e.g. 'thumb-001.png'
+  '002': 'thumb-002.png',
+  '003': 'thumb-003.png',
+  '004': '',
+  '005': '',
+};
+
+// Auto-inject images where filenames are set
+Object.entries(THUMBS).forEach(([id, file]) => {
+  if (!file) return;
+  const container = document.getElementById('thumb-0' + id.slice(-2));
+  if (!container) return;
+  const img = document.createElement('img');
+  img.src = file;
+  img.alt = '';
+  img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+  container.style.position = 'relative';
+  container.appendChild(img);
+});
+
+// Draw a unique generative preview into each card thumbnail
+// These will be replaced by real screenshots later
+
+function makePlaceholder(id, drawFn) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  const canvas = document.createElement('canvas');
+  canvas.width  = 400;
+  canvas.height = 300;
+  container.appendChild(canvas);
+  drawFn(canvas.getContext('2d'), 400, 300);
+}
+
+// 001 — dot grid
+makePlaceholder('thumb-001', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  const spacing = 18;
+  for (let x = spacing; x < W; x += spacing) {
+    for (let y = spacing; y < H; y += spacing) {
+      const d = Math.sin(x * 0.04) * Math.cos(y * 0.04);
+      const r = 1 + d * 2.5;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.3, r), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(238,234,226,${0.15 + d * 0.25})`;
+      ctx.fill();
+    }
+  }
+});
+
+// 002 — low poly triangles
+makePlaceholder('thumb-002', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  const pts = [];
+  for (let i = 0; i < 60; i++) {
+    pts.push([Math.random() * W, Math.random() * H]);
+  }
+  pts.push([0,0],[W,0],[0,H],[W,H],[W/2,0],[W/2,H],[0,H/2],[W,H/2]);
+  for (let i = 0; i < pts.length - 2; i += 3) {
+    const a = pts[i], b = pts[(i+1)%pts.length], c = pts[(i+2)%pts.length];
+    const lum = 20 + Math.random() * 40;
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.lineTo(c[0], c[1]);
+    ctx.closePath();
+    ctx.fillStyle = `rgba(238,234,226,${0.03 + Math.random() * 0.12})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(238,234,226,0.06)`;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+});
+
+// 003 — glitch lines
+makePlaceholder('thumb-003', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  // Horizontal scan tears
+  for (let i = 0; i < 40; i++) {
+    const y = Math.random() * H;
+    const h = 1 + Math.random() * 8;
+    const shift = (Math.random() - 0.5) * 60;
+    const alpha = 0.03 + Math.random() * 0.15;
+    ctx.fillStyle = `rgba(238,234,226,${alpha})`;
+    ctx.fillRect(shift, y, W, h);
+  }
+  // RGB channel blobs
+  for (let i = 0; i < 8; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const w = 20 + Math.random() * 80;
+    const h = 2 + Math.random() * 12;
+    ctx.fillStyle = `rgba(255,48,32,0.15)`;
+    ctx.fillRect(x - 4, y, w, h);
+    ctx.fillStyle = `rgba(0,180,255,0.15)`;
+    ctx.fillRect(x + 4, y, w, h);
+  }
+});
+
+// 004 — life calendar grid
+makePlaceholder('thumb-004', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  const cols = 46, rows = 28;
+  const cw = (W - 40) / cols;
+  const ch = (H - 40) / rows;
+  const lived = Math.floor(cols * rows * 0.42);
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const idx = c * rows + r;
+      const x = 20 + c * cw;
+      const y = 20 + r * ch;
+      const s = cw * 0.65;
+      if (idx < lived) {
+        ctx.fillStyle = '#eeeae2';
+      } else if (idx === lived) {
+        ctx.fillStyle = '#eeeae2';
+        ctx.fillRect(x, y, s, s);
+        ctx.fillStyle = '#0d0d0d';
+        ctx.fillRect(x+1.5, y+1.5, s-3, s-3);
+        continue;
+      } else {
+        ctx.fillStyle = '#1e1e1e';
+        ctx.fillRect(x, y, s, s);
+        ctx.strokeStyle = '#2a2a2a';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, y, s, s);
+        continue;
+      }
+      ctx.fillRect(x, y, s, s);
+    }
+  }
+});
+
+// 005 — life calculator (same grid, red/green split)
+makePlaceholder('thumb-005', (ctx, W, H) => {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, W, H);
+  const cols = 46, rows = 28;
+  const cw = (W - 40) / cols;
+  const ch = (H - 40) / rows;
+  const base = Math.floor(cols * rows * 0.52);
+  const adjusted = Math.floor(cols * rows * 0.42);
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const idx = c * rows + r;
+      const x = 20 + c * cw;
+      const y = 20 + r * ch;
+      const s = cw * 0.65;
+      if (idx < adjusted) {
+        ctx.fillStyle = '#eeeae2';
+      } else if (idx < base) {
+        // lost weeks — red
+        ctx.fillStyle = 'rgba(255,48,32,0.18)';
+        ctx.fillRect(x, y, s, s);
+        ctx.strokeStyle = 'rgba(255,48,32,0.35)';
+        ctx.lineWidth = 0.4;
+        ctx.strokeRect(x, y, s, s);
+        continue;
+      } else {
+        ctx.fillStyle = '#161616';
+        ctx.fillRect(x, y, s, s);
+        ctx.strokeStyle = '#232323';
+        ctx.lineWidth = 0.4;
+        ctx.strokeRect(x, y, s, s);
+        continue;
+      }
+      ctx.fillRect(x, y, s, s);
+    }
+  }
+});
+</script>
+
+<!-- Background p5 animation -->
 <script>
 new p5(function(p) {
   const B = [8, 8, 8];
@@ -263,56 +574,42 @@ new p5(function(p) {
   p.setup = function() {
     const cnv = p.createCanvas(p.windowWidth, p.windowHeight);
     cnv.parent('bg-canvas');
-    p.frameRate(28);
-    trails = Array.from({length: 60}, () => makeTrail(true));
+    p.background(...B);
+    for (let i = 0; i < 18; i++) trails.push(newTrail(p));
   };
 
-  function makeTrail(randomAge) {
-    return {
-      x: p.random(p.width * 0.05, p.width * 0.95),
-      y: p.random(p.height * 0.35, p.height * 0.95),
-      vx: p.random(-0.4, 0.4),
-      vy: p.random(-1.8, -0.4),
-      age: randomAge ? p.random(300) : 0,
-      maxAge: p.random(200, 380),
-      seed: p.random(1000)
-    };
-  }
-
   p.draw = function() {
-    p.background(...B, 14);
-
-    trails.forEach((a, i) => {
-      a.age++;
-      if (a.age > a.maxAge) {
-        trails[i] = makeTrail(false);
+    p.fill(...B, 12);
+    p.noStroke();
+    p.rect(0, 0, p.width, p.height);
+    trails.forEach((t, i) => {
+      t.x += t.vx; t.y += t.vy;
+      t.life--;
+      if (t.life <= 0 || t.x < -50 || t.x > p.width + 50 || t.y < -50 || t.y > p.height + 50) {
+        trails[i] = newTrail(p);
         return;
       }
-      let n = p.noise(a.x * 0.003, a.y * 0.003, a.seed + p.frameCount * 0.002);
-      let angle = n * p.TWO_PI * 2.4;
-      a.vx = a.vx * 0.88 + p.cos(angle) * 0.35;
-      a.vy = a.vy * 0.88 + p.sin(angle) * 0.35;
-      a.x += a.vx;
-      a.y += a.vy;
-
-      let life = 1 - a.age / a.maxAge;
-      p.stroke(...W, life * 110);
-      p.strokeWeight(0.7);
-      p.point(a.x, a.y);
-
-      if (a.age > a.maxAge * 0.82) {
-        p.noStroke();
-        p.fill(...W, life * 210);
-        p.circle(a.x, a.y, 4);
-        p.fill(...W, life * 35);
-        p.circle(a.x, a.y, 13);
-      }
+      const alpha = p.map(t.life, 0, t.maxLife, 0, 180);
+      p.fill(...W, alpha * 0.3);
+      p.noStroke();
+      p.ellipse(t.x, t.y, t.size);
     });
   };
 
-  p.windowResized = function() {
-    p.resizeCanvas(p.windowWidth, p.windowHeight);
-  };
+  p.windowResized = function() { p.resizeCanvas(p.windowWidth, p.windowHeight); };
+
+  function newTrail(p) {
+    const side = Math.floor(Math.random() * 4);
+    let x, y;
+    if (side === 0) { x = Math.random() * p.width; y = -10; }
+    else if (side === 1) { x = p.width + 10; y = Math.random() * p.height; }
+    else if (side === 2) { x = Math.random() * p.width; y = p.height + 10; }
+    else { x = -10; y = Math.random() * p.height; }
+    const angle = Math.atan2(p.height / 2 - y, p.width / 2 - x) + (Math.random() - 0.5) * 1.2;
+    const speed = 0.4 + Math.random() * 1.2;
+    const life  = 120 + Math.floor(Math.random() * 200);
+    return { x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: 1 + Math.random() * 2.5, life, maxLife: life };
+  }
 });
 </script>
 

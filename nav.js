@@ -7,7 +7,8 @@ const ORG_NAV = {
     { num: '001', name: 'Visual Glossary',     file: 'glossary.html' },
     { num: '002', name: 'Low Poly Generator',  file: 'low-poly.html'        },
     { num: '003', name: 'Glitch Generator',    file: 'glitch.html'              },
-    { num: '004', name: 'Life Calendar',       file: 'life-calendar.html'       },
+    { num: '004', name: 'Life Calendar',        file: 'life-calendar.html'       },
+    { num: '005', name: 'Life Calculator',     file: 'life-calculator.html'     },
   ],
 
   links: [

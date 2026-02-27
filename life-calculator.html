@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORG — Life Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400&display=swap');
+
+  :root {
+    --black: #080808;
+    --white: #eeeae2;
+    --dim: #1a1a1a;
+    --mid: #2a2a2a;
+    --bright: #555;
+    --red: #ff3020;
+    --green: #00ff88;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── LAYOUT ──────────────────────────────── */
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    flex: 1;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── LEFT: canvas ────────────────────────── */
+  .canvas-area {
+    border-right: 1px solid var(--dim);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 40px;
+    overflow: auto;
+    position: relative;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .empty-icon { font-size: 28px; color: var(--mid); }
+  .empty-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid); line-height: 2; }
+
+  #cal-canvas { max-width: 100%; display: block; }
+
+  /* Delta badge */
+  .delta-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .delta-badge.visible { display: flex; }
+  .delta-num {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .delta-num.positive { color: var(--green); }
+  .delta-num.negative { color: var(--red); }
+  .delta-num.neutral  { color: var(--white); }
+  .delta-label { font-size: 9px; letter-spacing: 0.2em; color: var(--bright); text-transform: uppercase; line-height: 1.8; }
+
+  /* Factor breakdown strip */
+  .breakdown {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+    max-width: 700px;
+    justify-content: center;
+  }
+  .breakdown.visible { display: flex; }
+  .factor-chip {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border: 1px solid var(--dim);
+    color: var(--bright);
+    white-space: nowrap;
+  }
+  .factor-chip.negative { border-color: rgba(255,48,32,0.3); color: var(--red); }
+  .factor-chip.positive { border-color: rgba(0,255,136,0.3); color: var(--green); }
+
+  /* ── RIGHT: controls ─────────────────────── */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: calc(100vh - 64px);
+  }
+
+  .controls-inner {
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .controls-title {
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--bright);
+    margin-bottom: 6px;
+  }
+
+  .controls-sub {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+
+  /* DOB row */
+  .dob-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--dim);
+    margin-bottom: 4px;
+  }
+
+  .control-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  input[type="date"] {
+    background: var(--dim);
+    border: 1px solid var(--mid);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 8px 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s;
+    color-scheme: dark;
+  }
+  input[type="date"]:focus { border-color: var(--bright); }
+
+  /* Section headers */
+  .section-header {
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #333;
+    padding: 16px 0 8px;
+    border-bottom: 1px solid var(--dim);
+    margin-bottom: 2px;
+  }
+  .section-header.risk   { color: rgba(255,48,32,0.5); }
+  .section-header.health { color: rgba(0,255,136,0.4); }
+
+  /* Question rows */
+  .q-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #111;
+    gap: 12px;
+  }
+
+  .q-left { flex: 1; }
+
+  .q-name {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    line-height: 1.5;
+  }
+
+  .q-impact {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .q-impact.neg { color: rgba(255,48,32,0.6); }
+  .q-impact.pos { color: rgba(0,255,136,0.5); }
+
+  /* Toggle */
+  .toggle-switch {
+    width: 32px; height: 16px;
+    background: var(--mid);
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--white); }
+  .toggle-switch.on.risk-toggle { background: var(--red); }
+  .toggle-switch.on.health-toggle { background: var(--green); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 10px; height: 10px;
+    background: var(--black);
+    border-radius: 50%;
+    transition: transform 0.15s;
+  }
+  .toggle-switch.on::after { transform: translateX(16px); }
+
+  /* Actions */
+  .actions {
+    padding: 20px 0 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-primary:disabled { opacity: 0.15; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    background: none;
+    color: var(--white);
+    border: 1px solid var(--mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    display: none;
+  }
+  .btn-secondary:hover { border-color: var(--white); }
+
+  .disclaimer {
+    font-size: 7.5px;
+    letter-spacing: 0.08em;
+    color: #2a2a2a;
+    line-height: 1.8;
+    padding-top: 12px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── LEFT ── -->
+  <div class="canvas-area">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">◆</div>
+      <div class="empty-label">Enter your date of birth<br>to see your personalised calendar</div>
+    </div>
+
+    <canvas id="cal-canvas" style="display:none"></canvas>
+
+    <div class="delta-badge" id="delta-badge">
+      <div>
+        <div class="delta-num" id="delta-num">—</div>
+      </div>
+      <div class="delta-label" id="delta-label">years<br>adjusted</div>
+    </div>
+
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <!-- ── RIGHT ── -->
+  <div class="controls">
+    <div class="controls-inner">
+      <div class="controls-title">Life Calculator</div>
+      <div class="controls-sub">Epidemiological averages · Not medical advice</div>
+
+      <!-- DOB -->
+      <div class="dob-row">
+        <label class="control-label" for="dob">Date of Birth</label>
+        <input type="date" id="dob" max="2010-01-01">
+      </div>
+
+      <!-- RISK FACTORS -->
+      <div class="section-header risk">Risk factors</div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Current smoker</div>
+          <div class="q-impact neg">−8 yrs · CDC / Surgeon General</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="smoker" data-val="-8"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Heavy drinker (14+ drinks/wk)</div>
+          <div class="q-impact neg">−5 yrs · Dutch Life Table Study</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="drinking" data-val="-5"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Sedentary lifestyle</div>
+          <div class="q-impact neg">−4 yrs · PMC Cohort Study, 2024</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="sedentary" data-val="-4"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Obese (BMI 30+)</div>
+          <div class="q-impact neg">−4 yrs · NEJM / Multi-cohort</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="obese" data-val="-4"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Chronically lonely</div>
+          <div class="q-impact neg">−8 yrs · Holt-Lunstad, 2015</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="lonely" data-val="-8"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Poor sleep (under 6hrs/night)</div>
+          <div class="q-impact neg">−3 yrs · Sleep Medicine Reviews</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="sleep_bad" data-val="-3"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">High chronic stress</div>
+          <div class="q-impact neg">−3 yrs · Cardiovascular epidemiology</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="stress" data-val="-3"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Poor diet (low fruit & veg)</div>
+          <div class="q-impact neg">−3 yrs · PMC Taiwan Cohort, 2024</div>
+        </div>
+        <div class="toggle-switch risk-toggle" data-key="diet_bad" data-val="-3"></div>
+      </div>
+
+      <!-- PROTECTIVE FACTORS -->
+      <div class="section-header health">Protective factors</div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Exercise regularly (3×/wk+)</div>
+          <div class="q-impact pos">+4 yrs · PMC Cohort Study, 2024</div>
+        </div>
+        <div class="toggle-switch health-toggle" data-key="exercise" data-val="+4"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Strong social connections</div>
+          <div class="q-impact pos">+5 yrs · Holt-Lunstad, 2015</div>
+        </div>
+        <div class="toggle-switch health-toggle" data-key="social" data-val="+5"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Good sleep (7–9hrs/night)</div>
+          <div class="q-impact pos">+2 yrs · Sleep Medicine Reviews</div>
+        </div>
+        <div class="toggle-switch health-toggle" data-key="sleep_good" data-val="+2"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Mediterranean / whole food diet</div>
+          <div class="q-impact pos">+3 yrs · HALE Project / JAMA</div>
+        </div>
+        <div class="toggle-switch health-toggle" data-key="diet_good" data-val="+3"></div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-left">
+          <div class="q-name">Never smoked</div>
+          <div class="q-impact pos">+3 yrs · Max Planck / Health Affairs</div>
+        </div>
+        <div class="toggle-switch health-toggle" data-key="nonsmoker" data-val="+3"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="btn-generate" disabled>Generate</button>
+        <button class="btn-secondary" id="btn-download">↓ Download PNG</button>
+      </div>
+
+      <div class="disclaimer">
+        Based on population-level epidemiological averages from peer-reviewed studies.
+        Not a medical prediction. Adjustments do not compound — overlapping factors
+        are capped to reflect real-world interaction effects.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="nav.js"></script>
+<script>
+
+// ── Factor state ──────────────────────────────────────────────────────────────
+const factors = {};
+
+document.querySelectorAll('.toggle-switch[data-key]').forEach(tog => {
+  factors[tog.dataset.key] = false;
+  tog.addEventListener('click', () => {
+    factors[tog.dataset.key] = !factors[tog.dataset.key];
+    tog.classList.toggle('on', factors[tog.dataset.key]);
+    autoGenerate();
+  });
+});
+
+// ── DOB ───────────────────────────────────────────────────────────────────────
+const dobInput = document.getElementById('dob');
+const btnGen   = document.getElementById('btn-generate');
+const btnDL    = document.getElementById('btn-download');
+const canvas   = document.getElementById('cal-canvas');
+
+dobInput.addEventListener('input', () => {
+  btnGen.disabled = !dobInput.value;
+  autoGenerate();
+});
+
+btnGen.addEventListener('click', generate);
+function autoGenerate() { if (dobInput.value) generate(); }
+
+// ── Adjustment calculation ────────────────────────────────────────────────────
+// Conflicts: can't have both sleep_bad and sleep_good, smoker and nonsmoker, etc.
+// Caps: total negative capped at -20, total positive capped at +15
+
+function calcAdjustment() {
+  const FACTORS = {
+    smoker:    -8, drinking: -5, sedentary: -4, obese:    -4,
+    lonely:    -8, sleep_bad: -3, stress:   -3, diet_bad: -3,
+    exercise:  +4, social:   +5, sleep_good: +2, diet_good: +3,
+    nonsmoker: +3,
+  };
+
+  // Conflicts — if both sides active, cancel out
+  const conflicts = [
+    ['sleep_bad', 'sleep_good'],
+    ['smoker', 'nonsmoker'],
+    ['diet_bad', 'diet_good'],
+    ['sedentary', 'exercise'],
+  ];
+
+  const active = { ...factors };
+  conflicts.forEach(([a, b]) => {
+    if (active[a] && active[b]) { active[a] = false; active[b] = false; }
+  });
+
+  // Loneliness and social connections partially cancel
+  if (active.lonely && active.social) {
+    active.lonely = false; active.social = false;
+  }
+
+  let total = 0;
+  const applied = [];
+
+  Object.entries(active).forEach(([key, on]) => {
+    if (!on) return;
+    const val = FACTORS[key];
+    total += val;
+    applied.push({ key, val });
+  });
+
+  // Cap extremes
+  total = Math.max(-20, Math.min(15, total));
+
+  return { total: Math.round(total), applied };
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function generate() {
+  if (!dobInput.value) return;
+
+  const { total, applied } = calcAdjustment();
+
+  // Update delta badge
+  const badge    = document.getElementById('delta-badge');
+  const deltaNum = document.getElementById('delta-num');
+  const deltaLbl = document.getElementById('delta-label');
+
+  badge.classList.add('visible');
+  const sign = total > 0 ? '+' : '';
+  deltaNum.textContent = sign + total;
+  deltaNum.className   = 'delta-num ' + (total > 0 ? 'positive' : total < 0 ? 'negative' : 'neutral');
+  deltaLbl.textContent = Math.abs(total) === 1 ? 'year\nadjusted' : 'years\nadjusted';
+
+  // Factor chips
+  const breakdown = document.getElementById('breakdown');
+  breakdown.classList.add('visible');
+  breakdown.innerHTML = applied.map(f => {
+    const sign = f.val > 0 ? '+' : '';
+    const cls  = f.val > 0 ? 'positive' : 'negative';
+    const labels = {
+      smoker: 'Smoker', drinking: 'Heavy drinking', sedentary: 'Sedentary',
+      obese: 'Obese', lonely: 'Lonely', sleep_bad: 'Poor sleep',
+      stress: 'High stress', diet_bad: 'Poor diet', exercise: 'Exercise',
+      social: 'Social connections', sleep_good: 'Good sleep',
+      diet_good: 'Good diet', nonsmoker: 'Non-smoker',
+    };
+    return `<div class="factor-chip ${cls}">${labels[f.key]} ${sign}${f.val}y</div>`;
+  }).join('') || '<div class="factor-chip">No factors selected — showing baseline</div>';
+
+  renderCalendar(canvas, 1, false, total);
+
+  document.getElementById('empty-state').style.display = 'none';
+  canvas.style.display = 'block';
+  btnDL.style.display  = 'block';
+}
+
+// ── Calendar renderer ─────────────────────────────────────────────────────────
+function renderCalendar(target, S, includeStats, adjustment) {
+  adjustment = adjustment || 0;
+
+  const dob         = new Date(dobInput.value);
+  const BASE_LIFE   = 80; // baseline
+  const lifeYears   = Math.max(20, Math.min(120, BASE_LIFE + adjustment));
+  const today       = new Date();
+  const totalWeeks  = lifeYears * 52;
+  const msPerWeek   = 7 * 24 * 60 * 60 * 1000;
+  const weeksLived  = Math.floor((today - dob) / msPerWeek);
+  const currentAge  = (today - dob) / (365.25 * 24 * 60 * 60 * 1000);
+  const currentYear = Math.floor(currentAge);
+  const remaining   = Math.max(0, totalWeeks - weeksLived);
+  const pct         = Math.min(100, weeksLived / totalWeeks * 100).toFixed(1);
+
+  // Layout — years = columns, weeks = rows
+  const COLS     = lifeYears;
+  const ROWS     = 52;
+  const CELL     = 6 * S;
+  const GAP      = 1.5 * S;
+  const STEP     = CELL + GAP;
+  const PAD_TOP  = 28 * S;
+  const PAD_LEFT = 28 * S;
+  const PAD_RIGHT = 16 * S;
+  const STATS_H  = includeStats ? 64 * S : 0;
+  const PAD_BOT  = 16 * S + STATS_H;
+
+  const W = PAD_LEFT + COLS * STEP - GAP + PAD_RIGHT;
+  const H = PAD_TOP  + ROWS * STEP - GAP + PAD_BOT;
+
+  target.width  = W;
+  target.height = H;
+
+  const ctx = target.getContext('2d');
+  ctx.fillStyle = '#080808';
+  ctx.fillRect(0, 0, W, H);
+
+  // Colour: lived weeks are white; adjusted-gain weeks are green; adjusted-loss weeks are red
+  const baseWeeks = BASE_LIFE * 52;
+
+  for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++) {
+      const weekIndex = col * 52 + row;
+      const x = PAD_LEFT + col * STEP;
+      const y = PAD_TOP  + row * STEP;
+
+      const isLived   = weekIndex < weeksLived;
+      const isCurrent = weekIndex === weeksLived;
+      const isGained  = adjustment > 0 && weekIndex >= baseWeeks && weekIndex < totalWeeks;
+      const isLost    = adjustment < 0 && weekIndex >= totalWeeks && weekIndex < baseWeeks;
+
+      if (isCurrent) {
+        ctx.fillStyle = '#eeeae2';
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.fillStyle = '#080808';
+        ctx.fillRect(x + 1.5*S, y + 1.5*S, CELL - 3*S, CELL - 3*S);
+      } else if (isLived) {
+        ctx.fillStyle = '#eeeae2';
+        ctx.fillRect(x, y, CELL, CELL);
+      } else if (isGained) {
+        // Extra weeks gained — green tint
+        ctx.fillStyle = 'rgba(0,255,136,0.15)';
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.strokeStyle = 'rgba(0,255,136,0.35)';
+        ctx.lineWidth = 0.4 * S;
+        ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
+      } else if (isLost) {
+        // Lost weeks — red tint (shows what baseline had)
+        ctx.fillStyle = 'rgba(255,48,32,0.12)';
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.strokeStyle = 'rgba(255,48,32,0.3)';
+        ctx.lineWidth = 0.4 * S;
+        ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
+      } else {
+        ctx.fillStyle = '#161616';
+        ctx.fillRect(x, y, CELL, CELL);
+        ctx.strokeStyle = '#232323';
+        ctx.lineWidth = 0.4 * S;
+        ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
+      }
+    }
+
+    // Decade labels
+    if (col % 10 === 0) {
+      const x = PAD_LEFT + col * STEP + CELL / 2;
+      ctx.fillStyle = col === currentYear ? '#eeeae2' : '#3a3a3a';
+      ctx.font = `${6 * S}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(col === 0 ? '0' : col + '', x, PAD_TOP - 8*S);
+    }
+  }
+
+  // Current year arrow
+  const tickX = PAD_LEFT + currentYear * STEP + CELL / 2;
+  ctx.fillStyle = '#eeeae2';
+  ctx.beginPath();
+  ctx.moveTo(tickX - 3*S, PAD_TOP - 4*S);
+  ctx.lineTo(tickX + 3*S, PAD_TOP - 4*S);
+  ctx.lineTo(tickX,       PAD_TOP - S);
+  ctx.closePath();
+  ctx.fill();
+  if (currentYear % 10 !== 0) {
+    ctx.font = `${6 * S}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(currentYear + '', tickX, PAD_TOP - 13*S);
+  }
+
+  // Week labels
+  ctx.fillStyle = '#888';
+  ctx.font = `${5.5 * S}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'right';
+  [1, 13, 26, 39, 52].forEach(w => {
+    const y = PAD_TOP + (w - 1) * STEP + CELL / 2 + 2*S;
+    ctx.fillText('wk ' + w, PAD_LEFT - 5*S, y);
+  });
+
+  // Years axis label
+  ctx.fillStyle = '#666';
+  ctx.font = `${5.5 * S}px IBM Plex Mono, monospace`;
+  ctx.textAlign = 'left';
+  ctx.fillText('years →', PAD_LEFT, 10*S);
+
+  // ── Stats footer in export ────────────────────────────────────────────────
+  if (includeStats) {
+    const { total, applied } = calcAdjustment();
+    const baseY = H - STATS_H + 8*S;
+
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth = S * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(PAD_LEFT, baseY);
+    ctx.lineTo(W - PAD_RIGHT, baseY);
+    ctx.stroke();
+
+    const statItems = [
+      { label: 'BASELINE', value: BASE_LIFE + ' yrs' },
+      { label: 'ADJUSTED', value: lifeYears + ' yrs' },
+      { label: 'WEEKS LIVED', value: weeksLived.toLocaleString() },
+      { label: 'REMAINING', value: remaining.toLocaleString() + ' wks' },
+      { label: 'LIFE ELAPSED', value: pct + '%' },
+    ];
+
+    const colW = (W - PAD_LEFT - PAD_RIGHT) / statItems.length;
+    statItems.forEach((s, i) => {
+      const x = PAD_LEFT + i * colW + colW / 2;
+      const isAdj = s.label === 'ADJUSTED';
+      ctx.fillStyle = isAdj
+        ? (total > 0 ? '#00ff88' : total < 0 ? '#ff3020' : '#eeeae2')
+        : '#eeeae2';
+      ctx.font = `300 ${12 * S}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(s.value, x, baseY + 18*S);
+      ctx.fillStyle = '#555';
+      ctx.font = `${4.5 * S}px IBM Plex Mono, monospace`;
+      ctx.fillText(s.label, x, baseY + 30*S);
+    });
+
+    // Factor summary line
+    const adjSign = total >= 0 ? '+' : '';
+    const factorStr = applied.length
+      ? applied.map(f => (f.val > 0 ? '+' : '') + f.val + 'y ' + f.key).join('  ·  ')
+      : 'No adjustments';
+    ctx.fillStyle = '#2a2a2a';
+    ctx.font = `${4 * S}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(factorStr.substring(0, 120), W / 2, baseY + 46*S);
+
+    // Watermark
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = `${4 * S}px IBM Plex Mono, monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText('ORG · odonata-research-group.github.io/ORG', W - PAD_RIGHT, H - 4*S);
+  }
+
+  return { weeksLived, remaining, pct };
+}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+btnDL.addEventListener('click', () => {
+  if (!dobInput.value) return;
+  const { total } = calcAdjustment();
+  const hires = document.createElement('canvas');
+  renderCalendar(hires, 3, true, total);
+  const a = document.createElement('a');
+  a.download = 'ORG-life-calculator.png';
+  a.href = hires.toDataURL('image/png');
+  a.click();
+});
+
+</script>
+</body>
+</html>
