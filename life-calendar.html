@@ -11,7 +11,7 @@
     --black: #080808;
     --white: #eeeae2;
     --dim: #1a1a1a;
-    --mid: #2a2a2a;
+    --mid: #666666;
     --bright: #555;
   }
 
@@ -302,7 +302,7 @@ function renderToCanvas(target, S, includeStats) {
       const x = PAD_LEFT + col * STEP + CELL / 2;
       ctx.fillStyle = col === currentYear
         ? (accentColor === 'none' ? '#eeeae2' : accentColor)
-        : '#3a3a3a';
+        : '#888888';
       ctx.font      = `${6 * S}px IBM Plex Mono, monospace`;
       ctx.textAlign = 'center';
       ctx.fillText(col === 0 ? '0' : col + '', x, PAD_TOP - 8*S);
@@ -329,7 +329,7 @@ function renderToCanvas(target, S, includeStats) {
   }
 
   // Week labels on left — every 13 (quarterly)
-  ctx.fillStyle = '#2a2a2a';
+  ctx.fillStyle = '#888888';
   ctx.font      = `${5.5 * S}px IBM Plex Mono, monospace`;
   ctx.textAlign = 'right';
   [1, 13, 26, 39, 52].forEach(w => {
@@ -338,7 +338,7 @@ function renderToCanvas(target, S, includeStats) {
   });
 
   // "years" axis label at top left
-  ctx.fillStyle = '#2a2a2a';
+  ctx.fillStyle = '#666666';
   ctx.font      = `${5.5 * S}px IBM Plex Mono, monospace`;
   ctx.textAlign = 'left';
   ctx.fillText('years →', PAD_LEFT, 10*S);
@@ -348,7 +348,7 @@ function renderToCanvas(target, S, includeStats) {
     const baseY = H - STATS_H + 6*S;
 
     // Divider
-    ctx.strokeStyle = '#1e1e1e';
+    ctx.strokeStyle = '#333333';
     ctx.lineWidth   = S * 0.5;
     ctx.beginPath();
     ctx.moveTo(PAD_LEFT, baseY);
@@ -369,7 +369,7 @@ function renderToCanvas(target, S, includeStats) {
       ctx.font      = `300 ${13 * S}px IBM Plex Mono, monospace`;
       ctx.textAlign = 'center';
       ctx.fillText(s.value, x, baseY + 20*S);
-      ctx.fillStyle = '#333';
+      ctx.fillStyle = '#aaaaaa';
       ctx.font      = `${5 * S}px IBM Plex Mono, monospace`;
       ctx.fillText(s.label, x, baseY + 32*S);
     });
