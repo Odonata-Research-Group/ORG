@@ -543,7 +543,7 @@ makePlaceholder('thumb-006', (ctx, W, H) => {
       const ch2 = chars[Math.floor(v*(chars.length-1))];
       if (ch2 === ' ') continue;
       const lum = Math.round(v*200);
-      ctx.fillStyle = \`rgb(\${lum},\${lum},\${lum})\`;
+      ctx.fillStyle = `rgb(${lum},${lum},${lum})`;
       ctx.fillText(ch2, c*cw, r*ch);
     }
   }
